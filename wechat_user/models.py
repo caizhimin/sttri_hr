@@ -36,6 +36,8 @@ LEAVE_MESSAGE_STATUS = (
     ('4', u'已完成'),
 )
 
+IS_LEADER_STATUS = ((0, '否'), (1, '是'))
+
 
 class WXUser(models.Model):
     department = models.CharField(max_length=30, blank=True, verbose_name='部门')
@@ -54,6 +56,7 @@ class WXUser(models.Model):
     company_working_years = models.IntegerField(verbose_name='企业工作年限')
     legal_vacation_days = models.FloatField(default=5, verbose_name='剩余法定年假数')
     company_vacation_days = models.FloatField(default=0, verbose_name='剩余企业年假数')
+    is_leader = models.IntegerField(choices=IS_LEADER_STATUS, verbose_name='是否为中层管理')
 
     def __unicode__(self):
         return self.name
