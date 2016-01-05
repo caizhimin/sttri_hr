@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div class="row">
+        <form class="img_form" id="" method="post" action="{% url 'img_upload' %}" enctype="multipart/form-data">
+            <!--病假证明-->
+            {% csrf_token %}
+            <div class="input-field col s12" style="width: 73%;margin: 5% 0 5% 10%;font-size: 1rem">
+                <div class="file-field input-field">
+                    <div class="btn">
+                        <span>生育医学证明</span>
+                        <input name="img" type="file" accept="image/jpeg" onchange="upload_img(this)">
+
+                    </div>
+                    <div class="file-path-wrapper">
+                        <input class="file-path" type="text">
+                    </div>
+
+                </div>
+                <img id="img_1" class="materialboxed" data-caption="病假证明" width="100%" src="" style="display: none">
+
+
+            </div>
+        </form>
+
+        <form class="img_form" id="" method="post" action="{% url 'img_upload' %}" enctype="multipart/form-data">
+            <!--病历证明-->
+            {% csrf_token %}
+
+            <div class="input-field col s12" style="width: 73%;margin: 5% 0 5% 10%;font-size: 1rem">
+                <div class="file-field input-field">
+                    <div class="btn" style="width: 143px;line-height: 1.5em;height: 50px;padding-top: 2%;padding-bottom: 2%">
+                        <span>生育保险待遇支付核定表</span>
+                        <input name="img" type="file" accept="image/jpeg" onchange="upload_img(this)">
+                    </div>
+                    <div class="file-path-wrapper">
+                        <input class="file-path" type="text">
+                    </div>
+                </div>
+                <img id="img_2" class="materialboxed" data-caption="病历证明" width="100%" src="" style="display: none">
+
+            </div>
+
+        </form>
+        <div style="margin: 10% 0 0 0;text-align: center">
+            <button class="waves-effect waves-light btn" id="leave_apply_btn" type="button" onclick="submit_img()">提&nbsp;&nbsp;交</button>
+        </div>
+
+    </div>
+{% endblock %}
+
+
+{% block extra_script %}
+    <script>
+
+        function upload_img(obj) {
+
+            var form = $(obj).closest('.img_form')
+            var option = {
+                success: function (url) {
+                    $(obj).parent().parent().next().children('img').attr('src', url).hide().fadeIn(2000)
+                }
+            }
+            //ajaxForm插件的提交方式
+            form.ajaxSubmit(option)
+
+        }
+
+        function submit_img() {
+
+            var url1 = $('#img_1').attr('src')
+            var url2 = $('#img_2').attr('src')
+
+            if (!url1) {
+                Materialize.toast('请上传生育医学证明', 4000)
+                return
+            }
+            if (!url2) {
+                Materialize.toast('请上传生育保险待遇支付核定表', 4000)
+                return
+            }
+            $.post(window.location.pathname, {
+                'img_str': "{'sick_level_img':" + "'" + url1 + "'" + "," + "'sick_history_img':" + "'" + url2 + "'" + "}"
+            }, function () {
+                window.location = '{% url 'success' 'leave' %}'
+            })
+
+
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <!--手机用-->
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/css/materialize.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script type="text/javascript" src="/static/js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.form.js"></script>
+{#    <script type="text/javascript" src="/static/js/jquery-ui.js"></script>#}
+    <script type="text/javascript" src="/static/js/materialize.js"></script>
+    <script src="/static/js/ajax_csrftoken.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.validate.min.js"></script>
+
+
+
+    {% block extra_css %}{% endblock %}
+    <title>
+        {% block title %}
+
+        {% endblock %}
+    </title>
+</head>
+<body>
+<!--导航条-->
+{% block navigation %}{% endblock %}
+{% block search_bar %}
+    <!--筛选拦-->
+{% endblock %}
+<!--正文-->
+{% block content %}{% endblock %}
+<!--页尾-->
+{% block footer %}
+
+{% endblock %}
+{% block extra_script %}{% endblock %}
+
+
+</body>
+</html>

@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load custom_tags %}
+{% block extra_css %}
+    <style>
+        .leave_content {
+            font-size: 86% !important;;
+            padding-top: 2% !important;;
+            padding-bottom: 2% !important;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+
+    {% if approve_leaves %}
+        <ul class="collapsible popout" data-collapsible="accordion">
+            {% for i in approve_leaves %}
+                <li class="list" id="{{ i.pk }}">
+                    <div class="collapsible-header waves-effect waves-light"
+                         style="background: #26a69a;color: #ffffff">
+                        <i class="material-icons">person</i>
+                        {{ i.applicant_name }}
+            <span style="float: right">
+                {% if i.group == 1 %}
+                    请假
+                {% else %}
+                    外出
+                {% endif %}
+
+            </span>
+
+                    </div>
+                    <div class="collapsible-body">
+                        <p class="leave_content">{{ i.leave_start_datetime }}至{{ i.leave_end_datetime }}</p>
+
+                        <p class="leave_content">
+                            共计
+                    <span style="color: red">
+                    {{ i.leave_days }}
+                    </span>
+                            天
+                    <span style="color: red">
+                        {% if i.type == 0 %}
+                            年假
+                        {% elif i.type == 1 %}
+                            事假
+                        {% elif i.type == 2 %}
+                            病假
+                        {% elif i.type == 3 %}
+                            产假
+                        {% elif i.type == 4 %}
+                            会议
+                        {% elif i.type == 5 %}
+                            培训
+                        {% elif i.type == 6 %}
+                            出差
+                        {% elif i.type == 7 %}
+                            其他
+                        {% endif %}
+                    </span>
+
+                        </p>
+
+                        <p class="leave_content">{{ i.leave_reason }}</p>
+
+                        <p class="leave_content">
+                            {% if i.attach_photo %}
+                                {% if i.type == 2 %}  <!--病假显示2张图片-->
+                                    <img width="45%" class="materialboxed" data-caption="病假证明"
+                                         src="{{ i.attach_photo|get_sick_level_img }}"
+                                         style="float: left;margin: 0 0 5% 0">
+                                    <img width="45%" class="materialboxed" data-caption="病历证明"
+                                         src="{{ i.attach_photo|get_sick_history_img }}"
+                                         style="float: right;margin: 0 0 5% 0">
+                                {% endif %}
+
+                                {% if i.type == 3 %} <!--产假显示2张图片-->
+                                    <img width="45%" class="materialboxed" data-caption="生育医学证明"
+                                         src="{{ i.attach_photo|get_sick_level_img }}"
+                                         style="float: left;margin: 0 0 5% 0">
+                                    <img width="45%" class="materialboxed" data-caption="生育保险待遇支付核定表"
+                                         src="{{ i.attach_photo|get_sick_history_img }}"
+                                         style="float: right;margin: 0 0 5% 0">
+                                {% endif %}
+
+                            {% else %}
+                                {% if i.type == 2 %}
+                                    还未上传病假/病历证明
+                                {% else %}
+                                    还未上传生育医学证明/生育保险待遇支付核定表
+                                {% endif %}
+                            {% endif %}
+
+                        </p>
+
+                        <p class="leave_content" style="text-align: center;margin-bottom: 2%;clear: both">
+                            <span class="leave_id" hidden="hidden">{{ i.pk }}</span>
+                            <span class="next_dealer_id" hidden="hidden">{{ i.next_dealer_id }}</span>
+                            <span class="applicant_wx_openid" hidden="hidden">{{ i.applicant_openid }}</span>
+                            <button class="agree_btn btn waves-effect waves-light blue lighten-1"
+                                    style="margin: 0 20% 0 0">同&nbsp;&nbsp;意
+                            </button>
+                            <button class="reject_btn btn waves-effect waves-light deep-orange" href="#modal1">
+                                拒&nbsp;&nbsp;绝
+                            </button>
+                        </p>
+
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div id="binding" style="text-align: center; margin:15% 0 10% 0">
+
+            <div style=" margin:0 0 10% 0">
+                <p style="margin-bottom: 3%;">您当前没有需要审批的请假/外出记录</p>
+
+            </div>
+
+        </div>
+    {% endif %}
+
+
+    <!-- Modal Structure -->
+
+    <div id="modal1" class="modal modal-fixed-footer">
+        <div class="modal-content">
+            <div class="row">
+                <form class="col s12">
+                    <div class="row">
+                        <div class="input-field col s12">
+                            <textarea id="refuse_reason" class="materialize-textarea"></textarea>
+                            <label for="refuse_reason">拒绝意见</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <span id="leave_id_span" hidden="hidden"></span>
+            <span id="next_dealer_id_span" hidden="hidden"></span>
+            <span id="applicant_wx_openid_span" hidden="hidden"></span>
+            <a id="refuse_submit" class="waves-effect waves-light btn modal-action modal-close">提 交</a>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block extra_script %}
+    <script>
+
+        $(document).ready(function () {
+
+            // the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
+            $('.reject_btn').leanModal({
+                        dismissible: true, // Modal can be dismissed by clicking outside of the modal
+                        opacity: .5, // Opacity of modal background
+                        in_duration: 500, // Transition in duration
+                        out_duration: 500, // Transition out duration
+                        complete: function () {
+                            $('#leave_id_span').text('')
+                            $('#next_dealer_id').text('')
+                            $('#applicant_wx_openid_span').text('')
+                            $('#refuse_reason').val('')
+                        }
+                    }
+            );
+        });
+
+
+        $('.agree_btn').click(function () {
+            var obj = $(this)
+            var leave_id = $(this).siblings('.leave_id').text()
+            var next_dealer_id = $(this).siblings('.next_dealer_id').text()
+            var applicant_wx_openid = $(this).siblings('.applicant_wx_openid').text()
+            $.post('/leave/approve', {
+                'leave_id': leave_id, 'next_dealer_id': next_dealer_id,
+                'applicant_wx_openid': applicant_wx_openid, 'result': 'agree'
+            }, function () {
+                Materialize.toast('成功', 4000)
+                obj.closest('.list').fadeOut()
+            })
+        })
+
+        $('.reject_btn').click(function () {
+            $('#leave_id_span').text($(this).siblings('.leave_id').text())
+            $('#next_dealer_id_span').text($(this).siblings('.next_dealer_id').text())
+            $('#applicant_wx_openid_span').text($(this).siblings('.applicant_wx_openid').text())
+
+        })
+
+        $('#refuse_submit').click(function () {
+            var leave_id = $(this).siblings('#leave_id_span').text()
+            var next_dealer_id = $(this).siblings('#next_dealer_id_span').text()
+            var applicant_wx_openid = $(this).siblings('#applicant_wx_openid_span').text()
+            var refuse_reason = $('#refuse_reason').val()
+            console.log(leave_id, next_dealer_id, applicant_wx_openid)
+            $.post('/leave/approve', {
+                'leave_id': leave_id, 'next_dealer_id': next_dealer_id,
+                'applicant_wx_openid': applicant_wx_openid, 'result': 'reject', 'refuse_reason': refuse_reason
+            }, function () {
+                Materialize.toast('成功', 4000)
+                $('#' + leave_id).fadeOut()
+            })
+        })
+
+    </script>
+{% endblock %}
