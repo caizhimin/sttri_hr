@@ -123,6 +123,7 @@ def my_leaves(request):
     return render_to_response('my_leaves.html', {'leaves': leaves})
 
 urlpatterns = [
+    url(r'^grappelli/', include('grappelli.urls')),  # grappelli URLS
     url(r'^admin/', admin.site.urls),
     url(r'^binding/$', binding, name='index'),
     url(r'^leave/$', leave, name='leave'),

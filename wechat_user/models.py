@@ -40,13 +40,13 @@ IS_LEADER_STATUS = ((0, '否'), (1, '是'))
 
 
 class WXUser(models.Model):
-    department = models.CharField(max_length=30, blank=True, verbose_name='部门')
+    department = models.CharField(max_length=30, verbose_name='部门')
     work_num = models.CharField(max_length=30, verbose_name='工号')
     name = models.CharField(max_length=20, verbose_name='姓名')
     cell_phone = models.CharField(max_length=20, verbose_name='手机')
     email = models.CharField(max_length=100, verbose_name='邮箱')
-    wx_openid = models.CharField(max_length=50, blank=True, verbose_name='用户微信openid')
-    wx_nickname = models.CharField(max_length=100, blank=True, verbose_name='wx昵称')
+    wx_openid = models.CharField(max_length=50, blank=True, verbose_name='微信openid')
+    wx_nickname = models.CharField(max_length=100, blank=True, verbose_name='微信昵称')
     sex = models.CharField(max_length=2, choices=SEX_LIST, blank=True, verbose_name='性别')
     direct_director = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, verbose_name='直接主管',
                                         related_name='director')
@@ -60,6 +60,9 @@ class WXUser(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    class Meta:
+        verbose_name_plural = '员工信息'
 
 
 class Leave(models.Model):
@@ -80,7 +83,10 @@ class Leave(models.Model):
     attach_photo = models.TextField(blank=True, verbose_name='上传附件图片')  # 为字典形式的字符串
 
     def __unicode__(self):
-        return '%s,%s,%s' % (self.leave_user_name, self.group, self.leave_start_time)
+        return '%s,%s,%s' % (self.applicant_name, self.group, self.leave_start_datetime)
+
+    class Meta:
+        verbose_name_plural = '请假/外出信息'
 
 
 
