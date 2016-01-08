@@ -196,6 +196,7 @@
                 data: {'leave_days_count': $('#leave_days').text(), 'group': group},
                 dataType: 'json',
                 success: function (data) {
+                    console.log(data)
                     if(data['leave_type'] == 'sick_leave')  //返回ID 则为病假，产假 跳转到上传证明
                     {
                          window.location = '/leave/sick_leave_img_upload_page/' + data['new_leave_id']

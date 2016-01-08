@@ -192,7 +192,7 @@ def leave_apply(request):
             wxuser.company_vacation_days -= (leave_days - wxuser.legal_vacation_days)
             wxuser.legal_vacation_days = 0
         wxuser.save()
-    return HttpResponse('Success')
+    return HttpResponse(json.dumps({'leave_type': 'leaves'}))
 
 
 def out_apply(request):
