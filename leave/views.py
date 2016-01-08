@@ -20,9 +20,14 @@ import io
 # Create your views here.
 
 
-HOLIDAY_API_KEY = '24e16647f7490e170d68de37bc7254fc'
+# HOLIDAY_API_KEY = '24e16647f7490e170d68de37bc7254fc'   # baidu
+HOLIDAY_API_KEY = '50e929681e924ddd6f53e5603780b23d'   # sina
 
-headers = {'apikey': HOLIDAY_API_KEY}
+
+
+# headers = {'apikey': HOLIDAY_API_KEY}  # baidu
+headers = {'apix-key': HOLIDAY_API_KEY}  # sina
+
 
 
 # 0 工作日
@@ -36,7 +41,8 @@ def get_work_days(days_list):
     :return: if single days_list, return 0 or 1 or 2 ,
              if multiple days_list, return {"20130101":2,"20130103":2,,"20130201":"0"}
     """
-    url = 'http://apis.baidu.com/xiaogg/holiday/holiday?d='
+    # url = 'http://apis.baidu.com/xiaogg/holiday/holiday?d='  # baidu
+    url = 'http://a.apix.cn/tbip/sinaapp/?d='
     prefix = ','.join(days_list)
     print '%s%s' % (url, prefix)
     try:
