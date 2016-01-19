@@ -220,24 +220,39 @@
 
 
         function compare_date(start_date) {
-            var start_date_array = start_date.split('-');
-            var myDate = new Date(Date.parse(start_date_array));  //Tue Dec 29 2015 08:00:00 GMT+0800 (CST)
-            var today = new Date(Date.parse(new Date().toLocaleDateString()));  //Mon Dec 28 2015 00:00:00 GMT+0800 (CST
-            return myDate >= today
+            // fix safari date problem
+            var start_date_string = start_date.replace(/-/g, "/")
+            var myDate = new Date(Date.parse(start_date_string));  //Tue Dec 29 2015 08:00:00 GMT+0800 (CST)
+            var today = new Date();  //Mon Dec 28 2015 00:00:00 GMT+0800 (CST
+            var today_string = today.getFullYear()+'/'
+            if (today.getMonth() + 1 < 10) {
+                 today_string += '0'+ (today.getMonth() + 1)
+            }
+            else{
+                today_string += + (today.getMonth() + 1)
+
+            }
+            today_string += '/'
+            if (today.getDate()<10){
+                today_string += '0'+ today.getDate()
+
+            }
+            else{
+                today_string += today.getDate()
+
+            }
+            return myDate >= new Date(Date.parse(today_string))
 
         }
 
 
         function compare_data1(start_date, end_date) {
-            var start_date_array = start_date.split('-');
+            var start_date_array = start_date.split('/');
             var data1 = new Date(Date.parse(start_date_array));
-            var end_date_array = end_date.split('-');
+            var end_date_array = end_date.split('/');
             var data2 = new Date(Date.parse(end_date_array));
-            console.log(data2>=data1)
+            console.log(data2 >= data1)
             return data2 >= data1
-
-
-        }
 
 
     </script>

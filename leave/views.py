@@ -23,11 +23,8 @@ import io
 # HOLIDAY_API_KEY = '24e16647f7490e170d68de37bc7254fc'   # baidu
 HOLIDAY_API_KEY = '50e929681e924ddd6f53e5603780b23d'   # sina
 
-
-
 # headers = {'apikey': HOLIDAY_API_KEY}  # baidu
 headers = {'apix-key': HOLIDAY_API_KEY}  # sina
-
 
 
 # 0 工作日

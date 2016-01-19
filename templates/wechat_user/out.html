@@ -3,7 +3,7 @@
 {% block content %}
 
 
-<div class="row">
+    <div class="row">
         <form class="" id="outing_apply_form" method="post" action="{% url 'out_apply' %}">
             {% csrf_token %}
             <div class="input-field col s12" style="width: 73%;margin: 5% 0 5% 10%;font-size: 1rem">
@@ -20,9 +20,11 @@
 
                 <div class="input-field col" style="width: 80%;">
 
-                    <input type="date" class="datepicker" name="start_date" id="start_date" onchange="calculate_leave_day()">
+                    <input type="date" class="datepicker" name="start_date" id="start_date"
+                           onchange="calculate_leave_day()">
                     <label for="name">
                         <i class="material-icons" style="font-size: 20px;float: left">date_range</i>
+
                         <p style="float: left">开始日期</p>
                     </label>
                 </div>
@@ -31,19 +33,22 @@
                 <i class="material-icons" style="float: left;font-size: 20px;margin: 5% 0 0 0">schedule</i>
 
                 <p class="time_title">开始时间</p>
-                <input name="start_time" type="radio" id="time2" style="margin: -5% 0 0 0" value="13:00" onchange="calculate_leave_day()" />
+                <input name="start_time" type="radio" id="time2" style="margin: -5% 0 0 0" value="13:00"
+                       onchange="calculate_leave_day()"/>
                 <label for="time2" style="float: right;margin: 0 5% 0 0">13:00</label>
 
 
-                <input name="start_time" type="radio" id="time1" value="08:30" onchange="calculate_leave_day()" />
+                <input name="start_time" type="radio" id="time1" value="08:30" onchange="calculate_leave_day()"/>
                 <label class="start_time" for="time1">08:30</label>
             </div>
 
             <div class="row" style="margin: 5% 0 0 10%">
                 <div class="input-field col" style="width: 80%;">
-                    <input type="date" class="datepicker" name="end_date" id="end_date" onchange="calculate_leave_day()">
+                    <input type="date" class="datepicker" name="end_date" id="end_date"
+                           onchange="calculate_leave_day()">
                     <label for="name">
                         <i class="material-icons" style="font-size: 20px;float: left">date_range</i>
+
                         <p style="float: left">结束日期</p>
                     </label>
                 </div>
@@ -52,20 +57,24 @@
                 <i class="material-icons" style="float: left;font-size: 20px;margin: 5% 0 0 0">schedule</i>
 
                 <p class="time_title">结束时间</p>
-                <input name="end_time" type="radio" id="time4"  value="17:00" style="margin: -5% 0 0 0" onchange="calculate_leave_day()" />
+                <input name="end_time" type="radio" id="time4" value="17:00" style="margin: -5% 0 0 0"
+                       onchange="calculate_leave_day()"/>
                 <label for="time4" style="float: right;margin: 0 5% 0 0">17:00</label>
 
-                <input name="end_time" type="radio" id="time3" value="13:00" onchange="calculate_leave_day()" />
+                <input name="end_time" type="radio" id="time3" value="13:00" onchange="calculate_leave_day()"/>
                 <label class="start_time" for="time3">13:00</label>
 
             </div>
             <div class="input-field col s12" style="width: 73%;margin: 5% 0 5% 10%;font-size: 1rem">
-                <span>外出天数</span>&nbsp;&nbsp;&nbsp;&nbsp;<span id="leave_days" style="color: red">0</span>&nbsp;&nbsp;<span>天</span>
+                <span>外出天数</span>&nbsp;&nbsp;&nbsp;&nbsp;<span id="leave_days"
+                                                               style="color: red">0</span>&nbsp;&nbsp;<span>天</span>
             </div>
             <div class="input-field col s12" style="width: 73%;margin: 5% 0 5% 10%;font-size: 1rem">
-                <textarea id="icon_prefix2" class="materialize-textarea" name="message" style="margin: 0 0 0 0"></textarea>
+                <textarea id="icon_prefix2" class="materialize-textarea" name="message"
+                          style="margin: 0 0 0 0"></textarea>
                 <label for="icon_prefix2" style="margin: 0 0 0 0">
                     <i class="material-icons" style="float: left;font-size: 20px">message</i>
+
                     <p style="float: left">事由/备注</p>
                 </label>
             </div>
@@ -90,26 +99,28 @@
 
         });
 
-        function calculate_leave_day(){
+        function calculate_leave_day() {
             var start_date = $('#start_date').val()
             var end_date = $('#end_date').val()
             var start_time = $("input[name='start_time']:checked").val()
             var end_time = $("input[name='end_time']:checked").val()
             console.log(start_date, end_date, start_time, end_time)
-            if((start_date&&end_date&&start_time&&end_time)&&(new Date(end_date)>=new Date(start_date))){
-                $.post('/leave/calculate_leave_day', {'start_date': start_date, 'end_date': end_date,
-                    'start_time': start_time, 'end_time': end_time}, function(data){
+            if ((start_date && end_date && start_time && end_time) && (new Date(end_date) >= new Date(start_date))) {
+                $.post('/leave/calculate_leave_day', {
+                    'start_date': start_date, 'end_date': end_date,
+                    'start_time': start_time, 'end_time': end_time
+                }, function (data) {
                     $('#leave_days').text(data)
                 })
             }
-            else{
+            else {
                 $('#leave_days').text(0)
             }
         }
 
-        $('#out_apply_btn').click(function(){
+        $('#out_apply_btn').click(function () {
             console.log(window.location.pathname)
-            if(window.location.pathname == '/leave/'){
+            if (window.location.pathname == '/leave/') {
                 var group = '1'
             }
             else {
@@ -124,12 +135,12 @@
             var start_time = $("input[name='start_time']:checked").val()
             var end_time = $("input[name='end_time']:checked").val()
             var message = $("textarea[name='message']").val()
-            if (!level_type) {
-                Materialize.toast('请选择外出类型', 4000)
-                $("select[name='leave_type']").click()
-                return
+                        if (!level_type) {
+                            Materialize.toast('请选择外出类型', 4000)
+                            $("select[name='leave_type']").click()
+                            return
 
-            }
+                        }
             if (!start_date) {
                 Materialize.toast('请选择开始日期', 4000)
                 return
@@ -170,33 +181,49 @@
 
 
             var option = {
-                    data: {'leave_days_count': $('#leave_days').text(), 'group': group},
-                    success: function () {
-                        window.location = '{% url 'success' 'out' %}'
-                    }
+                data: {'leave_days_count': $('#leave_days').text(), 'group': group},
+                success: function () {
+                    window.location = '{% url 'success' 'out' %}'
                 }
-                //ajaxForm插件的提交方式
-                $('#outing_apply_form').ajaxSubmit(option)
+            }
+            //ajaxForm插件的提交方式
+            $('#outing_apply_form').ajaxSubmit(option)
         })
 
 
-    function compare_date(start_date) {
-            var start_date_array = start_date.split('-');
-            var myDate = new Date(Date.parse(start_date_array));  //Tue Dec 29 2015 08:00:00 GMT+0800 (CST)
-            var today = new Date(Date.parse(new Date().toLocaleDateString()));  //Mon Dec 28 2015 00:00:00 GMT+0800 (CST
-        alert(myDate)
-        alert(today)
-        return myDate >= today
+        function compare_date(start_date) {
+            // fix safari date problem
+            var start_date_string = start_date.replace(/-/g, "/")
+            var myDate = new Date(Date.parse(start_date_string));  //Tue Dec 29 2015 08:00:00 GMT+0800 (CST)
+            var today = new Date();  //Mon Dec 28 2015 00:00:00 GMT+0800 (CST
+            var today_string = today.getFullYear()+'/'
+            if (today.getMonth() + 1 < 10) {
+                 today_string += '0'+ (today.getMonth() + 1)
+            }
+            else{
+                today_string += + (today.getMonth() + 1)
+
+            }
+            today_string += '/'
+            if (today.getDate()<10){
+                today_string += '0'+ today.getDate()
+
+            }
+            else{
+                today_string += today.getDate()
+
+            }
+            return myDate >= new Date(Date.parse(today_string))
 
         }
 
 
         function compare_data1(start_date, end_date) {
-            var start_date_array = start_date.split('-');
+            var start_date_array = start_date.split('/');
             var data1 = new Date(Date.parse(start_date_array));
-            var end_date_array = end_date.split('-');
+            var end_date_array = end_date.split('/');
             var data2 = new Date(Date.parse(end_date_array));
-            console.log(data2>=data1)
+            console.log(data2 >= data1)
             return data2 >= data1
 
 
