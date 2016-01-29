@@ -2,38 +2,37 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from django.utils.html import format_html
+
 
 # Create your models here.
 
-
-MALE = '0'
-FEMALE = '1'
 SEX_LIST = (
-    (MALE, '男'),
-    (FEMALE, '女'),
+    ('0', '男'),
+    ('1', '女'),
 )
 LEAVE_GROUP_LIST = (
-    ('1', u'请假'),
-    ('2', u'外出')
+    (1, u'请假'),
+    (2, u'外出')
 )
 
 LEAVE_TYPE_LIST = (
-    ('0', u'年假'),
-    ('1', u'事假'),
-    ('2', u'病假'),
-    ('3', u'产假'),
-    ('4', u'会议'),
-    ('5', u'培训'),
-    ('6', u'出差'),
-    ('7', u'其他'),
+    (0, u'年假'),
+    (1, u'事假'),
+    (2, u'病假'),
+    (3, u'产假'),
+    (4, u'会议'),
+    (5, u'培训'),
+    (6, u'出差'),
+    (7, u'其他'),
 )
 
 LEAVE_MESSAGE_STATUS = (
-    ('0', u'取消'),
-    ('1', u'审核中'),
-    ('2', u'未通过', ),
-    ('3', u'通过'),
-    ('4', u'已完成'),
+    (0, u'已取消'),
+    (1, u'审核中'),
+    (2, u'未通过', ),
+    (3, u'已通过'),
+    (4, u'已完成'),
 )
 
 IS_LEADER_STATUS = ((0, '否'), (1, '是'))
@@ -47,7 +46,7 @@ class WXUser(models.Model):
     email = models.CharField(max_length=100, verbose_name='邮箱')
     wx_openid = models.CharField(max_length=50, blank=True, verbose_name='微信openid')
     wx_nickname = models.CharField(max_length=100, blank=True, verbose_name='微信昵称')
-    sex = models.CharField(max_length=2, choices=SEX_LIST, blank=True, verbose_name='性别')
+    sex = models.IntegerField(choices=SEX_LIST, blank=True, verbose_name='性别')
     direct_director = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, verbose_name='直接主管',
                                         related_name='director')
     dept_leader = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, verbose_name='部门领导',
@@ -63,6 +62,7 @@ class WXUser(models.Model):
 
     class Meta:
         verbose_name_plural = '员工信息'
+        verbose_name = '员工信息'
 
 
 class Leave(models.Model):
@@ -84,6 +84,16 @@ class Leave(models.Model):
 
     def __unicode__(self):
         return '%s,%s,%s' % (self.applicant_name, self.group, self.leave_start_datetime)
+
+    def show_attach_photo_for_admin(self):
+        if self.attach_photo:
+            attach_photo = eval(self.attach_photo)
+            return format_html('<img src="%s" width="300px" style="margin-right:30px" /><img src="%s" width="300px"/>' %
+                               (attach_photo['sick_level_img'], attach_photo['sick_history_img']))
+        else:
+            return '无'
+
+    show_attach_photo_for_admin.short_description = '附件图片'
 
     class Meta:
         verbose_name_plural = '请假/外出信息'

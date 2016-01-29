@@ -9,7 +9,7 @@ def create_qrcode(URL, file_path):
     img = qr.make_image()
     img.save(file_path)
 
-create_qrcode('http://192.168.2.100:8000/leave/sick_leave_img_upload_page/46', '/Users/cai/cai/a.png')
+create_qrcode('http://192.168.1.123:8000/leave/sick_leave_img_upload_page/46', '/Users/cai/cai/a.png')
 
 
 
