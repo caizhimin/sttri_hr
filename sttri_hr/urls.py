@@ -70,7 +70,10 @@ def leave(request):
         user_id = request.session.get('user_id', '')
         if not user_id:
             user_id = get_user_id(request.GET.get('code'))
-        current_user = WXUser.objects.get(wx_openid=user_id)
+        if not WXUser.objects.filter(wx_openid=user_id).exists():
+            return HttpResponseRedirect('/binding')
+        else:
+            current_user = WXUser.objects.get(wx_openid=user_id)
         return render_to_response('leave.html', {'current_user': current_user}, context_instance=RequestContext(request))
     else:
         return HttpResponseRedirect(get_code_url('http://wachat.sttri.com.cn/leave'))
