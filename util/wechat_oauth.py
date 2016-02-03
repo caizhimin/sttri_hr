@@ -53,6 +53,7 @@ def get_user_id(code):
     :return:
     """
     access_token = get_access_token()
+    print('dad', USER_ID_URL % (access_token, code, AGENT_id))
     response = requests.get(USER_ID_URL % (access_token, code, AGENT_id))
     data = json.loads(response.text)
     if data.get('UserId'):
