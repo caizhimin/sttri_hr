@@ -8,8 +8,8 @@ from django.utils.html import format_html
 # Create your models here.
 
 SEX_LIST = (
-    ('0', '男'),
-    ('1', '女'),
+    (0, '男'),
+    (1, '女'),
 )
 LEAVE_GROUP_LIST = (
     (1, u'请假'),
@@ -83,7 +83,7 @@ class Leave(models.Model):
     attach_photo = models.TextField(blank=True, verbose_name='上传附件图片')  # 为字典形式的字符串
 
     def __unicode__(self):
-        return '%s,%s,%s' % (self.applicant_name, self.group, self.leave_start_datetime)
+        return '%s' % self.applicant_name
 
     def show_attach_photo_for_admin(self):
         if self.attach_photo:

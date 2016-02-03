@@ -20,42 +20,44 @@ import os
 from django.conf.urls import patterns, url, include
 from django.contrib import admin
 from django.shortcuts import render_to_response
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
 from wechat_user.models import WXUser, Leave
+from util.wechat_oauth import get_user_id, get_code_url
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
 def binding(request):
-    if request.method == 'POST':
-        open_id = '11111'
-        name = request.POST.get('name')
-        work_num = request.POST.get('work_num')
-        cell_phone = request.POST.get('cell_phone')
-        if WXUser.objects.filter(name=name, work_num=work_num, cell_phone=cell_phone).exists():
-            user = WXUser.objects.get(name=name, work_num=work_num, cell_phone=cell_phone)
-            user.wx_openid = open_id
-            user.save()
-            return HttpResponse('Success')
-        else:
-            return HttpResponse('Fail')
-    open_id = '111'
-    if WXUser.objects.filter(wx_openid=open_id).exists():
+    # if request.method == 'POST':
+    #     user_id = request.session.get('user_id')
+    #     name = request.POST.get('name')
+    #     work_num = request.POST.get('work_num')
+    #     cell_phone = request.POST.get('cell_phone')
+    #     if WXUser.objects.filter(name=name, work_num=work_num, cell_phone=cell_phone).exists():
+    #         user = WXUser.objects.get(name=name, work_num=work_num, cell_phone=cell_phone)
+    #         user.wx_openid = user_id
+    #         user.save()
+    #         return HttpResponse('Success')
+    #     else:
+    #         return HttpResponse('Fail')
+    user_id = request.session.get('user_id', '')
+    if WXUser.objects.filter(wx_openid=user_id).exists():
         return render_to_response('binding.html', {'banded': 'banded'})
-    # if request.GET.get('code'):
-    #     code = request.GET.get('code')
-    #     open_id = get_openid_by_oauth(code)
-    #     request.session['open_id'] = open_id
-    #     # request.session['open_id'] = '8881'  # todo 先弄死了
-    #     Member.objects.get_or_create(open_id=request.session.get('open_id'))
-    #     return render_to_response('index.html')
-    # REDIRECT_URI = 'http%3a%2f%2fcommandor0.oicp.net%2findex'  # 要用urlcode编码
-    # URL = CODE_URL.replace('APPID', APPID).replace('REDIRECT_URI', REDIRECT_URI).replace('SCOPE', SCOPE).replace('STATE', '1')
-    # # return HttpResponseRedirect(URL)
-    # request.session['open_id'] = 'oknWFt6btKyvj_sKgD65Mq3OHCn4'
-    return render_to_response('binding.html', context_instance=RequestContext(request))
+    else:
+        # if request.GET.get('code'):
+        #     code = request.GET.get('code')
+        #     open_id = get_openid_by_oauth(code)
+        #     request.session['open_id'] = open_id
+        #     # request.session['open_id'] = '8881'  # todo 先弄死了
+        #     Member.objects.get_or_create(open_id=request.session.get('open_id'))
+        #     return render_to_response('index.html')
+        # REDIRECT_URI = 'http%3a%2f%2fcommandor0.oicp.net%2findex'  # 要用urlcode编码
+        # URL = CODE_URL.replace('APPID', APPID).replace('REDIRECT_URI', REDIRECT_URI).replace('SCOPE', SCOPE).replace('STATE', '1')
+        # # return HttpResponseRedirect(URL)
+        # request.session['open_id'] = 'oknWFt6btKyvj_sKgD65Mq3OHCn4'
+        return render_to_response('binding.html', context_instance=RequestContext(request))
 
 
 def leave(request):
@@ -64,10 +66,14 @@ def leave(request):
     :param request:
     :return:
     """
-    request.session['open_id'] = '8888'  # todo delete later
-    open_id = request.session.get('open_id')
-    current_user = WXUser.objects.get(wx_openid=open_id)
-    return render_to_response('leave.html', {'current_user': current_user}, context_instance=RequestContext(request))
+    if request.GET.get('code'):
+        user_id = request.session.get('user_id', '')
+        if not user_id:
+            user_id = get_user_id(request.GET.get('code'))
+        current_user = WXUser.objects.get(wx_openid=user_id)
+        return render_to_response('leave.html', {'current_user': current_user}, context_instance=RequestContext(request))
+    else:
+        return HttpResponseRedirect(get_code_url('http://wachat.sttri.com.cn/leave'))
 
 
 def out(request):
