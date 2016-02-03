@@ -30,33 +30,23 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
 def binding(request):
-    # if request.method == 'POST':
-    #     user_id = request.session.get('user_id')
-    #     name = request.POST.get('name')
-    #     work_num = request.POST.get('work_num')
-    #     cell_phone = request.POST.get('cell_phone')
-    #     if WXUser.objects.filter(name=name, work_num=work_num, cell_phone=cell_phone).exists():
-    #         user = WXUser.objects.get(name=name, work_num=work_num, cell_phone=cell_phone)
-    #         user.wx_openid = user_id
-    #         user.save()
-    #         return HttpResponse('Success')
-    #     else:
-    #         return HttpResponse('Fail')
+    if request.method == 'POST':
+        user_id = request.session.get('user_id')
+        name = request.POST.get('name')
+        work_num = request.POST.get('work_num')
+        cell_phone = request.POST.get('cell_phone')
+        if WXUser.objects.filter(name=name, work_num=work_num, cell_phone=cell_phone).exists():
+            user = WXUser.objects.get(name=name, work_num=work_num, cell_phone=cell_phone)
+            user.wx_openid = user_id
+            user.save()
+            return HttpResponse('Success')
+        else:
+            return HttpResponse('Fail')
     user_id = request.session.get('user_id', '')
+    print(user_id)
     if WXUser.objects.filter(wx_openid=user_id).exists():
         return render_to_response('binding.html', {'banded': 'banded'})
     else:
-        # if request.GET.get('code'):
-        #     code = request.GET.get('code')
-        #     open_id = get_openid_by_oauth(code)
-        #     request.session['open_id'] = open_id
-        #     # request.session['open_id'] = '8881'  # todo 先弄死了
-        #     Member.objects.get_or_create(open_id=request.session.get('open_id'))
-        #     return render_to_response('index.html')
-        # REDIRECT_URI = 'http%3a%2f%2fcommandor0.oicp.net%2findex'  # 要用urlcode编码
-        # URL = CODE_URL.replace('APPID', APPID).replace('REDIRECT_URI', REDIRECT_URI).replace('SCOPE', SCOPE).replace('STATE', '1')
-        # # return HttpResponseRedirect(URL)
-        # request.session['open_id'] = 'oknWFt6btKyvj_sKgD65Mq3OHCn4'
         return render_to_response('binding.html', context_instance=RequestContext(request))
 
 
@@ -68,6 +58,7 @@ def leave(request):
     """
     if request.GET.get('code'):
         user_id = request.session.get('user_id', '')
+        request.session['user_id'] = user_id
         if not user_id:
             user_id = get_user_id(request.GET.get('code'))
         if not WXUser.objects.filter(wx_openid=user_id).exists():
