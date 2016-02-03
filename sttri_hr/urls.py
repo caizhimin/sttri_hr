@@ -43,7 +43,7 @@ def binding(request):
         else:
             return HttpResponse('Fail')
     user_id = request.session.get('user_id', '')
-    print(user_id)
+    print('user_id', user_id)
     if WXUser.objects.filter(wx_openid=user_id).exists():
         return render_to_response('binding.html', {'banded': 'banded'})
     else:
