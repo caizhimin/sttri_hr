@@ -17,6 +17,7 @@ from util.qiniu_upload import my_qiniu
 from django.views.decorators.csrf import csrf_exempt
 from PIL import Image
 import io
+from util.wechat_oauth import send_msg
 # Create your views here.
 
 
@@ -81,7 +82,7 @@ def send_email(sender_email, receiver_email, receiver_name, applicant_name, leav
     if email_type == 'agree':
         subject = '%s%s申请通过' % (applicant_name, leave_type)
         msg = MIMEText('<html><h3>%s, 您好:</h3><div>您的%s申请%s至%s %s  天'
-                       '<span style="color:red">申请未通过</span>, 请您前往手机微信客户端进行查看。</div>'
+                       '<span style="color:red">申请已通过</span>, 请您前往手机微信客户端进行查看。</div>'
                        '<br><div style="color:red">此为系统邮件, 请勿回复</div></html>' %
                        (applicant_name, leave_type, leave_start_datetime, leave_end_datetime,
                         leave_days), 'html', 'utf-8')
@@ -157,8 +158,8 @@ def leave_apply(request):
     start_time = request.POST.get('start_time', '')
     end_time = request.POST.get('end_time', '')
     leave_days = float(request.POST.get('leave_days_count', 0))
-    open_id = request.session.get('open_id')
-    wxuser = WXUser.objects.get(wx_openid=open_id)
+    user_id = request.session.get('user_id')
+    wxuser = WXUser.objects.get(wx_openid=user_id)
     create_time = datetime.datetime.now()
     leave_start_datetime = start_date + ' ' + start_time
     leave_end_datetime = end_date + ' ' + end_time
@@ -167,9 +168,10 @@ def leave_apply(request):
     direct_director = WXUser.objects.get(pk=wxuser.direct_director.pk)
     direct_director_email = direct_director.email
     direct_director_name = direct_director.name
-    send_email('jack_czm@vip.sina.com', direct_director_email, direct_director_name, wxuser.name, leave_start_datetime,
-               leave_end_datetime, leave_days, '请假', 'apply')
-
+    # send_email('jack_czm@vip.sina.com', direct_director_email, direct_director_name, wxuser.name, leave_start_datetime,
+    #            leave_end_datetime, leave_days, '请假', 'apply')
+    send_msg(receive_open_id=direct_director.wx_openid, applicant_name=wxuser.name, start_datetime=leave_start_datetime,
+             end_datetime=leave_end_datetime, _type='请假', days=leave_days, msg_type='apply')
     if group == '1' and leave_type in ('2', '3'):  # 病假or产假 , 返回新增leave_id用于上传图片页面
         new_leave_id = Leave.objects.get_or_create(group=int(group), type=leave_type,
                                                    leave_start_datetime=leave_start_datetime,
@@ -212,8 +214,8 @@ def out_apply(request):
     start_time = request.POST.get('start_time', '')
     end_time = request.POST.get('end_time', '')
     leave_days = float(request.POST.get('leave_days_count', 0))
-    open_id = request.session.get('open_id')
-    wxuser = WXUser.objects.get(wx_openid=open_id)
+    user_id = request.session.get('user_id')
+    wxuser = WXUser.objects.get(wx_openid=user_id)
     create_time = datetime.datetime.now()
     leave_start_datetime = start_date + ' ' + start_time
     leave_end_datetime = end_date + ' ' + end_time

@@ -3,6 +3,7 @@ import requests
 import json
 from django.core.cache import cache
 from urllib import quote_plus
+
 __author__ = 'cai'
 
 corpid = 'wxae4465686cf99af4'  # AppID
@@ -16,7 +17,10 @@ CODE_URL = 'https://open.weixin.qq.com/connect/oauth2/authorize?' \
 
 USER_ID_URL = 'https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token=%s&code=%s&agentid=%s'
 
-AGENT_id = 6
+AGENT_ID = 6
+
+SEND_MSG_URL = 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=%s'
+
 
 def get_access_token():
     """
@@ -27,7 +31,7 @@ def get_access_token():
         url = ACCESS_TOKEN_URL % (corpid, corpsecret)
         response = requests.get(url)  # requests模块请求URL获得状态码（<Response [200]>）
         access_token_json_data = response.text  # 获取access_token_json对象
-        data = json.loads(access_token_json_data)   # 返回成python 字典
+        data = json.loads(access_token_json_data)  # 返回成python 字典
         access_token = data['access_token']
         cache.set('access_token', access_token, 7200)
         return access_token
@@ -42,7 +46,6 @@ def get_code_url(redirect_uri):
     :return:
     """
     urlencode_redirect_uri = quote_plus(redirect_uri).lower()
-    print('CODE_URL', CODE_URL % (corpid, urlencode_redirect_uri))
     return CODE_URL % (corpid, urlencode_redirect_uri)
 
 
@@ -53,14 +56,65 @@ def get_user_id(code):
     :return:
     """
     access_token = get_access_token()
-    print('dad', USER_ID_URL % (access_token, code, AGENT_id))
-    response = requests.get(USER_ID_URL % (access_token, code, AGENT_id))
+    response = requests.get(USER_ID_URL % (access_token, code, AGENT_ID))
     data = json.loads(response.text)
     if data.get('UserId'):
         user_id = data.get('UserId')
     else:
         user_id = ''
     return user_id
+
+
+def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _type, days, msg_type):
+    """
+
+    :param receive_open_id: 接受者的open_id
+    :param applicant_name:  申请者姓名
+    :param _type: 外出OR请假
+    :param msg_type: 消息类型， 申请, 同意，拒绝
+    :return:
+    """
+    access_token = get_access_token()
+    if msg_type == 'agree':
+        content = """
+                {
+                   "touser": "%s",
+                   "msgtype": "text",
+                   "agentid": %s,
+                   "text": {
+                       "content": "%s, 您好。您的%s申请 %s 至 %s %s  天已通过，请点击申请记录进行查看"
+                   },
+                   "safe":"0"
+                }
+                 """ % (receive_open_id, AGENT_ID, applicant_name, _type, start_datetime, end_datetime, days)
+    elif msg_type == 'apply':
+        content = """
+                {
+                   "touser": "%s",
+                   "msgtype": "text",
+                   "agentid": %s,
+                   "text": {
+                       "content": "您的部门同事%s申请%s至%s %s %s 天, 请您点击审批按钮进行批准。"
+                   },
+                   "safe":"0"
+                }
+                 """ % (receive_open_id, AGENT_ID, applicant_name, start_datetime, end_datetime, _type, days)
+    else:  # 拒绝
+        content = """
+                {
+                   "touser": "%s",
+                   "msgtype": "text",
+                   "agentid": %s,
+                   "text": {
+                       "content": ""%s, 您好。您的%s申请 %s 至 %s %s  天未通过, 请点击申请记录进行查看。"
+                   },
+                   "safe":"0"
+                }
+                 """ % (receive_open_id, AGENT_ID, applicant_name, start_datetime, end_datetime, _type, days)
+    requests.post(SEND_MSG_URL % access_token, data=content)
+
+
+
 
 
 
