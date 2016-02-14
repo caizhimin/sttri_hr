@@ -88,7 +88,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "safe":"0"
                 }
                  """ % (receive_open_id, AGENT_ID, applicant_name, _type, start_datetime, end_datetime, days)
-    elif msg_type == 'apply' or 'agree':
+    elif msg_type in ('apply', 'agree'):
         content = """
                 {
                    "touser": "%s",
