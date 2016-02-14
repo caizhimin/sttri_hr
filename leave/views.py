@@ -170,8 +170,9 @@ def leave_apply(request):
     direct_director_name = direct_director.name
     # send_email('jack_czm@vip.sina.com', direct_director_email, direct_director_name, wxuser.name, leave_start_datetime,
     #            leave_end_datetime, leave_days, '请假', 'apply')
-    send_msg(receive_open_id=direct_director.wx_openid, applicant_name=wxuser.name, start_datetime=leave_start_datetime,
-             end_datetime=leave_end_datetime, _type='请假', days=leave_days, msg_type='apply')
+    send_msg(receive_open_id=direct_director.wx_openid, applicant_name=wxuser.name,
+             start_datetime=str(leave_start_datetime),
+             end_datetime=str(leave_end_datetime), _type='请假', days=leave_days, msg_type='apply')
     if group == '1' and leave_type in ('2', '3'):  # 病假or产假 , 返回新增leave_id用于上传图片页面
         new_leave_id = Leave.objects.get_or_create(group=int(group), type=leave_type,
                                                    leave_start_datetime=leave_start_datetime,
@@ -228,9 +229,11 @@ def out_apply(request):
     direct_director = WXUser.objects.get(pk=wxuser.direct_director.pk)
     direct_director_email = direct_director.email
     direct_director_name = direct_director.name
-    send_email('jack_czm@vip.sina.com', direct_director_email, direct_director_name, wxuser.name, leave_start_datetime,
-               leave_end_datetime, leave_days, '外出', 'apply')
-
+    # send_email('jack_czm@vip.sina.com', direct_director_email, direct_director_name, wxuser.name, leave_start_datetime,
+    #            leave_end_datetime, leave_days, '外出', 'apply')
+    send_msg(receive_open_id=direct_director.wx_openid, applicant_name=wxuser.name,
+             start_datetime=str(leave_start_datetime),
+             end_datetime=str(leave_end_datetime), _type='外出', days=leave_days, msg_type='apply')
     return HttpResponse('Success')
 
 
@@ -255,45 +258,72 @@ def approve(request):
                 dept_leader = WXUser.objects.get(pk=dept_leader_id)
                 leave.next_dealer_id = dept_leader_id
                 # 发邮件给直接主管审批
-                send_email('jack_czm@vip.sina.com', dept_leader.email, dept_leader.name, applicant_wx_user.name,
-                           leave.leave_start_datetime, leave.leave_end_datetime, leave.leave_days,
-                           '请假' if leave.group == 1 else '外出', 'apply')
+                # send_email('jack_czm@vip.sina.com', dept_leader.email, dept_leader.name, applicant_wx_user.name,
+                #            leave.leave_start_datetime, leave.leave_end_datetime, leave.leave_days,
+                #            '请假' if leave.group == 1 else '外出', 'apply')
+                send_msg(receive_open_id=dept_leader.wx_openid, applicant_name=applicant_wx_user.name,
+                         start_datetime=str(leave.leave_start_datetime),
+                         end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
+                         days=leave.leave_days,  msg_type='agree')
 
             if int(applicant_wx_user.dept_leader_id) == next_dealer_id:  # 第二级审批, 即部门领导审批
                 if leave.leave_days > 1 and leave.type == 1:  # 如果是事假且大于1天，通知HR部门审批
                     leave.next_dealer_id = 999  # todo 先假设HR审批账号id为999
-                    send_email('jack_czm@vip.sina.com', 'HR@com', applicant_wx_user.name,  # todo HR邮箱待填写
-                               applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
-                               leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
+                    # send_email('jack_czm@vip.sina.com', 'HR@com', applicant_wx_user.name,  # todo HR邮箱待填写
+                    #            applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
+                    #            leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
+                    send_msg(receive_open_id='tany', applicant_name=applicant_wx_user.name,
+                             start_datetime=str(leave.leave_start_datetime),
+                             end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
+                             days=leave.leave_days,  msg_type='agree')
+
                 else:
                     leave.next_dealer_id = None
                     leave.status = 3
                     leave.deal_end_time = datetime.datetime.now()
                     # 发邮件给申请者, 通知审批通过
-                    send_email('jack_czm@vip.sina.com', applicant_wx_user.email, applicant_wx_user.name,
-                               applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
-                               leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
+                    # send_email('jack_czm@vip.sina.com', applicant_wx_user.email, applicant_wx_user.name,
+                    #            applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
+                    #            leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
+                    send_msg(receive_open_id=applicant_wx_user.wx_openid, applicant_name=applicant_wx_user.name,
+                             start_datetime=str(leave.leave_start_datetime),
+                             end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
+                             days=leave.leave_days,  msg_type='approve')
 
             if leave.next_dealer_id == 999 and leave.type == 1:  # todo HR审批大于1天的事假
                 leave.next_dealer_id = None
                 leave.status = 3
                 leave.deal_end_time = datetime.datetime.now()
                 # 发邮件给申请者, 通知审批通过
-                send_email('jack_czm@vip.sina.com', applicant_wx_user.email, applicant_wx_user.name,
-                           applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
-                           leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
+                # send_email('jack_czm@vip.sina.com', applicant_wx_user.email, applicant_wx_user.name,
+                #            applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
+                #            leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
+
+                send_msg(receive_open_id=applicant_wx_user.wx_openid, applicant_name=applicant_wx_user.name,
+                         start_datetime=str(leave.leave_start_datetime),
+                         end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
+                         days=leave.leave_days,  msg_type='approve')
         else:  # 同意外出
             leave.next_dealer_id = None
             leave.status = 3
             leave.deal_end_time = datetime.datetime.now()
             # 发邮件给申请者, 通知审批通过
-            send_email('jack_czm@vip.sina.com', applicant_wx_user.email, applicant_wx_user.name,
-                       applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
-                       leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
+            # send_email('jack_czm@vip.sina.com', applicant_wx_user.email, applicant_wx_user.name,
+            #            applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
+            #            leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
+            send_msg(receive_open_id=applicant_wx_user.wx_openid, applicant_name=applicant_wx_user.name,
+                     start_datetime=str(leave.leave_start_datetime),
+                     end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
+                     days=leave.leave_days,  msg_type='approve')
+
             if applicant_wx_user.is_leader == 1:  # 中层领导外出需发邮件给HR
-                send_email('jack_czm@vip.sina.com', 'HR@com', applicant_wx_user.name,  # todo HR邮箱待填写
-                           applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
-                           leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
+                # send_email('jack_czm@vip.sina.com', 'HR@com', applicant_wx_user.name,  # todo HR邮箱待填写
+                #            applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
+                #            leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
+                send_msg(receive_open_id='tany', applicant_name=applicant_wx_user.name,
+                         start_datetime=str(leave.leave_start_datetime),
+                         end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
+                         days=leave.leave_days,  msg_type='approve')
 
         leave.save()
         return HttpResponse('Agree')
@@ -301,9 +331,13 @@ def approve(request):
     else:
         # 拒绝
         # 发邮件给申请者, 通知审批未通过
-        send_email('jack_czm@vip.sina.com', applicant_wx_user.email, applicant_wx_user.name, applicant_wx_user.name,
-                   leave.leave_start_datetime, leave.leave_end_datetime, leave.leave_days,
-                   '请假' if leave.group == 1 else '外出', 'reject')
+        # send_email('jack_czm@vip.sina.com', applicant_wx_user.email, applicant_wx_user.name, applicant_wx_user.name,
+        #            leave.leave_start_datetime, leave.leave_end_datetime, leave.leave_days,
+        #            '请假' if leave.group == 1 else '外出', 'reject')
+        send_msg(receive_open_id=applicant_wx_user.wx_openid, applicant_name=applicant_wx_user.name,
+                 start_datetime=str(leave.leave_start_datetime),
+                 end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
+                 days=leave.leave_days,  msg_type='reject')
         leave.next_dealer_id = None
         leave.status = 2
         leave.deal_end_time = datetime.datetime.now()
@@ -322,6 +356,7 @@ def cancel(request):
     leave = Leave.objects.get(pk=leave_id)
     leave.status = 0
     leave.save()
+    # TODO 通知领导取消
     return HttpResponse('Success')
 
 

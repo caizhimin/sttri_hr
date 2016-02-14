@@ -1,4 +1,5 @@
 # coding: utf8
+from __future__ import unicode_literals
 import requests
 import json
 from django.core.cache import cache
@@ -75,7 +76,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
     :return:
     """
     access_token = get_access_token()
-    if msg_type == 'agree':
+    if msg_type == 'approve':
         content = """
                 {
                    "touser": "%s",
@@ -87,7 +88,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "safe":"0"
                 }
                  """ % (receive_open_id, AGENT_ID, applicant_name, _type, start_datetime, end_datetime, days)
-    elif msg_type == 'apply':
+    elif msg_type == 'apply' or 'agree':
         content = """
                 {
                    "touser": "%s",
@@ -106,12 +107,13 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "msgtype": "text",
                    "agentid": %s,
                    "text": {
-                       "content": ""%s, 您好。您的%s申请 %s 至 %s %s  天未通过, 请点击申请记录进行查看。"
+                       "content": "%s, 您好。您的%s申请 %s 至 %s %s  天未通过, 请点击申请记录进行查看。"
                    },
                    "safe":"0"
                 }
                  """ % (receive_open_id, AGENT_ID, applicant_name, start_datetime, end_datetime, _type, days)
-    requests.post(SEND_MSG_URL % access_token, data=content)
+    print(11, content.encode('utf-8'))
+    requests.post(SEND_MSG_URL % access_token, data=content.encode('utf-8'))
 
 
 
