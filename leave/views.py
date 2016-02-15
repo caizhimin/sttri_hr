@@ -268,7 +268,7 @@ def approve(request):
 
             if int(applicant_wx_user.dept_leader_id) == next_dealer_id:  # 第二级审批, 即部门领导审批
                 if leave.leave_days > 1 and leave.type == 1:  # 如果是事假且大于1天，通知HR部门审批
-                    leave.next_dealer_id = 999  # todo 先假设HR审批账号id为999
+                    leave.next_dealer_id = 12  # todo 先假设HR审批账号id为999
                     # send_email('jack_czm@vip.sina.com', 'HR@com', applicant_wx_user.name,  # todo HR邮箱待填写
                     #            applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
                     #            leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
