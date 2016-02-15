@@ -111,7 +111,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    },
                    "safe":"0"
                 }
-                 """ % (receive_open_id, AGENT_ID, applicant_name, start_datetime, end_datetime, _type, days)
+                 """ % (receive_open_id, AGENT_ID, applicant_name, _type, start_datetime, end_datetime, days)
     print(11, content.encode('utf-8'))
     requests.post(SEND_MSG_URL % access_token, data=content.encode('utf-8'))
 
