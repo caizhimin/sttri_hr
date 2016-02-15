@@ -8142,9 +8142,14 @@ select {
  */
 .picker__footer {
   text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: space-between; }
+  /*display: -webkit-box;      *//* OLD - iOS 6-, Safari 3.1-6 */
+  /*display: -moz-box;         *//* OLD - Firefox 19- (buggy but mostly works) */
+  /*display: -ms-flexbox;      *//* TWEENER - IE 10 */
+  /*display: -webkit-flex;     *//* NEW - Chrome */
+  /*display: flex;             *//* NEW, Spec - Opera 12.1, Firefox 20+ */
+  /*align-items: center;*/
+  /*justify-content: space-between;*/
+}
 
 .picker__button--today, .picker__button--clear, .picker__button--close {
   border: 1px solid #ffffff;
@@ -8284,8 +8289,9 @@ select {
     background-color: #a1ded8; }
 
 .picker__footer {
-  text-align: right;
-  padding: 5px 10px; }
+  /*text-align: right;*/
+  padding: 5px 10px;
+}
 
 .picker__close, .picker__today {
   font-size: 1.1rem;
