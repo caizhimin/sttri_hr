@@ -119,6 +119,7 @@
         }
 
         $('#out_apply_btn').click(function () {
+            $(this).attr('disabled', true)
             console.log(window.location.pathname)
             if (window.location.pathname == '/leave/') {
                 var group = '1'
@@ -182,6 +183,7 @@
 
             var option = {
                 data: {'leave_days_count': $('#leave_days').text(), 'group': group},
+                async:false,
                 success: function () {
                     window.location = '{% url 'success' 'out' %}'
                 }

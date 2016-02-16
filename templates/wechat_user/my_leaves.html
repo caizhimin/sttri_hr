@@ -178,7 +178,7 @@
             <div class="modal-footer">
                 <span id="done_leave_id" hidden="hidden"></span>
                 <a href="#!" id="done_submit"
-                   class="modal-action modal-close waves-effect red lighten-1 waves-effect btn" style="color:#ffffff;" >确认</a>
+                   class="modal-action modal-close waves-effect red lighten-1 waves-effect btn" style="color:#ffffff;">确认</a>
             </div>
         </div>
         </div>
@@ -216,6 +216,7 @@
             );
         });
         $('.cancel_btn').click(function () {
+            $(this).attr('disabled', true)
             $('#cancel_leave_id').text($(this).siblings('.leave_id').text())
 
         })
@@ -234,6 +235,7 @@
         })
 
     $('.done_btn').click(function () {
+            $(this).attr('disabled', true)
             $('#done_leave_id').text($(this).siblings('.leave_id').text())
 
         })

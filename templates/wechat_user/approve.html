@@ -172,6 +172,7 @@
 
 
         $('.agree_btn').click(function () {
+            $(this).attr('disabled', true)
             var obj = $(this)
             var leave_id = $(this).siblings('.leave_id').text()
             var next_dealer_id = $(this).siblings('.next_dealer_id').text()
@@ -186,6 +187,7 @@
         })
 
         $('.reject_btn').click(function () {
+            $(this).attr('disabled', true)
             $('#leave_id_span').text($(this).siblings('.leave_id').text())
             $('#next_dealer_id_span').text($(this).siblings('.next_dealer_id').text())
             $('#applicant_wx_openid_span').text($(this).siblings('.applicant_wx_openid').text())
@@ -193,6 +195,7 @@
         })
 
         $('#refuse_submit').click(function () {
+            $(this).attr('disabled', true)
             var leave_id = $(this).siblings('#leave_id_span').text()
             var next_dealer_id = $(this).siblings('#next_dealer_id_span').text()
             var applicant_wx_openid = $(this).siblings('#applicant_wx_openid_span').text()
