@@ -80,7 +80,9 @@
             </div>
 
             <div style="margin: 10% 0 0 0;">
-                <button class="waves-effect waves-light btn" id="out_apply_btn" type="button" style="float: left;margin: 0 0 0 37%">提&nbsp;&nbsp;交</button>
+                <button class="waves-effect waves-light btn" id="out_apply_btn" type="button"
+                        style="float: left;margin: 0 0 0 37%">提&nbsp;&nbsp;交
+                </button>
             </div>
         </form>
     </div>
@@ -136,54 +138,62 @@
             var start_time = $("input[name='start_time']:checked").val()
             var end_time = $("input[name='end_time']:checked").val()
             var message = $("textarea[name='message']").val()
-                        if (!level_type) {
-                            Materialize.toast('请选择外出类型', 4000)
-                            $("select[name='leave_type']").click()
-                            return
+            if (!level_type) {
+                Materialize.toast('请选择外出类型', 4000)
+                $("select[name='leave_type']").click()
+                return
 
-                        }
+            }
             if (!start_date) {
                 Materialize.toast('请选择开始日期', 4000)
+                $(this).attr('disabled', false)
                 return
 
             }
 
             if (!compare_date(start_date)) {
                 Materialize.toast('开始日期不得小于当前日期', 4000)
+                $(this).attr('disabled', false)
                 return
             }
             if (!end_date) {
                 Materialize.toast('请选择结束日期', 4000)
+                $(this).attr('disabled', false)
                 return
 
             }
             if (!compare_data1(start_date, end_date)) {
                 Materialize.toast('结束日期不得小于开始日期', 4000)
+                $(this).attr('disabled', false)
                 return
             }
             if (!start_time) {
                 Materialize.toast('请选择开始时间', 4000)
+                $(this).attr('disabled', false)
                 return
             }
             if (!end_time) {
                 Materialize.toast('请选择结束时间', 4000)
+                $(this).attr('disabled', false)
                 return
             }
             if (start_date == end_date && start_time == end_time) {
                 Materialize.toast('开始时间与结束时间重复', 4000)
                 $("input[name='end_time']").attr("checked", false);
+                $(this).attr('disabled', false)
                 return
             }
 
             if (!message) {
                 Materialize.toast('请填写事由/备注', 4000)
+                $(this).attr('disabled', false)
                 return
             }
 
 
             var option = {
                 data: {'leave_days_count': $('#leave_days').text(), 'group': group},
-                async:false,
+                async: false,
                 success: function () {
                     window.location = '{% url 'success' 'out' %}'
                 }
@@ -198,20 +208,20 @@
             var start_date_string = start_date.replace(/-/g, "/")
             var myDate = new Date(Date.parse(start_date_string));  //Tue Dec 29 2015 08:00:00 GMT+0800 (CST)
             var today = new Date();  //Mon Dec 28 2015 00:00:00 GMT+0800 (CST
-            var today_string = today.getFullYear()+'/'
+            var today_string = today.getFullYear() + '/'
             if (today.getMonth() + 1 < 10) {
-                 today_string += '0'+ (today.getMonth() + 1)
+                today_string += '0' + (today.getMonth() + 1)
             }
-            else{
-                today_string += + (today.getMonth() + 1)
+            else {
+                today_string += +(today.getMonth() + 1)
 
             }
             today_string += '/'
-            if (today.getDate()<10){
-                today_string += '0'+ today.getDate()
+            if (today.getDate() < 10) {
+                today_string += '0' + today.getDate()
 
             }
-            else{
+            else {
                 today_string += today.getDate()
 
             }

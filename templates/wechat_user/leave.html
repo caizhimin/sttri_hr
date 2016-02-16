@@ -17,7 +17,9 @@
                         </option>
                         <option value="1">事假</option>
                     {% else %}
-                        <option value="0">年假(剩余法定{{ current_user.legal_vacation_days }}天,企业{{ current_user.company_vacation_days }}天)</option>
+                        <option value="0">
+                            年假(剩余法定{{ current_user.legal_vacation_days }}天,企业{{ current_user.company_vacation_days }}天)
+                        </option>
                         <option value="1" disabled="disabled">事假</option>
                     {% endif %}
                     <option value="2">病假</option>
@@ -90,7 +92,9 @@
             </div>
 
             <div style="margin: 10% 0 0 0">
-                <button class="waves-effect waves-light btn" id="leave_apply_btn" type="button" style="float: left;margin: 0 0 0 37%">提&nbsp;&nbsp;交</button>
+                <button class="waves-effect waves-light btn" id="leave_apply_btn" type="button"
+                        style="float: left;margin: 0 0 0 37%">提&nbsp;&nbsp;交
+                </button>
             </div>
         </form>
     </div>
@@ -151,44 +155,53 @@
             if (!level_type) {
                 Materialize.toast('请选择请假类型', 4000)
                 $("select[name='leave_type']").click()
+                $(this).attr('disabled', false)
                 return
 
             }
             if (!start_date) {
                 Materialize.toast('请选择开始日期', 4000)
+                $(this).attr('disabled', false)
                 return
 
             }
 
             if (!compare_date(start_date)) {
                 Materialize.toast('开始日期不得小于当前日期', 4000)
+                $(this).attr('disabled', false)
                 return
             }
             if (!end_date) {
                 Materialize.toast('请选择结束日期', 4000)
+                $(this).attr('disabled', false)
                 return
 
             }
             if (!compare_data1(start_date, end_date)) {
                 Materialize.toast('结束日期不得小于开始日期', 4000)
+                $(this).attr('disabled', false)
                 return
             }
             if (!start_time) {
                 Materialize.toast('请选择开始时间', 4000)
+                $(this).attr('disabled', false)
                 return
             }
             if (!end_time) {
                 Materialize.toast('请选择结束时间', 4000)
+                $(this).attr('disabled', false)
                 return
             }
             if (start_date == end_date && start_time == end_time) {
                 Materialize.toast('开始时间与结束时间重复', 4000)
+                $(this).attr('disabled', false)
                 $("input[name='end_time']").attr("checked", false);
                 return
             }
 
             if (!message) {
                 Materialize.toast('请填写事由/备注', 4000)
+                $(this).attr('disabled', false)
                 return
             }
 
@@ -196,17 +209,17 @@
             var option = {
                 data: {'leave_days_count': $('#leave_days').text(), 'group': group},
                 dataType: 'json',
-                async:false,
+                async: false,
                 success: function (data) {
                     console.log(data)
-                    if(data['leave_type'] == 'sick_leave')  //返回ID 则为病假，产假 跳转到上传证明
+                    if (data['leave_type'] == 'sick_leave')  //返回ID 则为病假，产假 跳转到上传证明
                     {
-                         window.location = '/leave/sick_leave_img_upload_page/' + data['new_leave_id']
+                        window.location = '/leave/sick_leave_img_upload_page/' + data['new_leave_id']
                     }
-                    else if (data['leave_type'] == 'pregnant_leave'){
+                    else if (data['leave_type'] == 'pregnant_leave') {
                         window.location = '/leave/pregnant_leave_img_upload_page/' + data['new_leave_id']
                     }
-                    else{
+                    else {
                         window.location = '{% url 'success' 'leave' %}'
 
                     }
@@ -226,20 +239,20 @@
             var start_date_string = start_date.replace(/-/g, "/")
             var myDate = new Date(Date.parse(start_date_string));  //Tue Dec 29 2015 08:00:00 GMT+0800 (CST)
             var today = new Date();  //Mon Dec 28 2015 00:00:00 GMT+0800 (CST
-            var today_string = today.getFullYear()+'/'
+            var today_string = today.getFullYear() + '/'
             if (today.getMonth() + 1 < 10) {
-                 today_string += '0'+ (today.getMonth() + 1)
+                today_string += '0' + (today.getMonth() + 1)
             }
-            else{
-                today_string += + (today.getMonth() + 1)
+            else {
+                today_string += +(today.getMonth() + 1)
 
             }
             today_string += '/'
-            if (today.getDate()<10){
-                today_string += '0'+ today.getDate()
+            if (today.getDate() < 10) {
+                today_string += '0' + today.getDate()
 
             }
-            else{
+            else {
                 today_string += today.getDate()
 
             }
