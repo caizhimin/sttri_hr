@@ -132,6 +132,7 @@
         }
 
         $('#leave_apply_btn').click(function () {
+            $(this).attr('disabled', true)
             {#            console.log(window.location.pathname)#}
             if (window.location.pathname == '/leave/') {
                 var group = '1'
