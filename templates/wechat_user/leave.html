@@ -12,13 +12,11 @@
                 <select name="leave_type">
                     <option value="" disabled selected>请假类型</option>
                     {% if current_user.legal_vacation_days <= 0.0 and current_user.company_vacation_days <= 0.0 %}
-                        <option value="0" disabled="disabled">
-                            年假(剩余法定{{ current_user.legal_vacation_days }}天,企业{{ current_user.company_vacation_days }}天)
+                        <option value="0" disabled="disabled">年假(剩余法定{{ current_user.legal_vacation_days }}天,企业{{ current_user.company_vacation_days }}天)
                         </option>
                         <option value="1">事假</option>
                     {% else %}
-                        <option value="0">
-                            年假(剩余法定{{ current_user.legal_vacation_days }}天,企业{{ current_user.company_vacation_days }}天)
+                        <option value="0">年假(剩余法定{{ current_user.legal_vacation_days }}天,企业{{ current_user.company_vacation_days }}天)
                         </option>
                         <option value="1" disabled="disabled">事假</option>
                     {% endif %}
