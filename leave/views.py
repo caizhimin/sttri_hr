@@ -192,12 +192,13 @@ def leave_apply(request):
                              applicant_openid=wxuser.wx_openid,
                              status=1, next_dealer=wxuser.direct_director, refuse_reason='')
         # minus vacation days
-        if wxuser.legal_vacation_days >= leave_days:  # 优先扣除法定年假，再扣企业年假
-            wxuser.legal_vacation_days -= leave_days
-        else:
-            wxuser.company_vacation_days -= (leave_days - wxuser.legal_vacation_days)
-            wxuser.legal_vacation_days = 0
-        wxuser.save()
+        if leave_type == '0':  # 申请年假
+            if wxuser.legal_vacation_days >= leave_days:  # 优先扣除法定年假，再扣企业年假
+                wxuser.legal_vacation_days -= leave_days
+            else:
+                wxuser.company_vacation_days -= (leave_days - wxuser.legal_vacation_days)
+                wxuser.legal_vacation_days = 0
+            wxuser.save()
     return HttpResponse(json.dumps({'leave_type': 'leaves'}))
 
 
