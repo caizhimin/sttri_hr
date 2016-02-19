@@ -180,7 +180,7 @@ def leave_apply(request):
     end_time = request.POST.get('end_time', '')
     leave_days = float(request.POST.get('leave_days_count', 0))
     user_id = request.session.get('user_id')
-    wxuser = WXUser.objects.get(wx_openid=user_id)
+    wxuser = WXUser.objects.get(wx_openid='8888')
     create_time = datetime.datetime.now()
     leave_start_datetime = start_date + ' ' + start_time
     leave_end_datetime = end_date + ' ' + end_time
@@ -195,6 +195,9 @@ def leave_apply(request):
              start_datetime=str(leave_start_datetime),
              end_datetime=str(leave_end_datetime), _type='请假', days=leave_days, msg_type='apply')
     if group == '1' and leave_type in ('2', '3'):  # 病假or产假 , 返回新增leave_id用于上传图片页面
+        if leave_days >= 5 and leave_type == '2':  # 病假超5天通知李赫
+            send_msg('lih', applicant_name=wxuser.department+'部门'+wxuser.name, start_datetime=str(leave_start_datetime),
+                     end_datetime=str(leave_end_datetime), _type='病假', days=leave_days, msg_type='apply')
         new_leave_id = Leave.objects.get_or_create(group=int(group), type=leave_type,
                                                    leave_start_datetime=leave_start_datetime,
                                                    leave_end_datetime=leave_end_datetime, create_time=create_time,
