@@ -124,24 +124,45 @@ def calculate_leave_day(request):
         day_list = [str(start_datetime+datetime.timedelta(days=i)).replace('-', '')
                     for i in xrange((end_datetime - start_datetime).days+1)]
         day_status = get_work_days(day_list)
-        if day_status:
-            print day_list
-            print(day_status)
-            if isinstance(day_status, dict):
-                leave_days_count = Counter(v for k, v in day_status.items())[0]
+        print(day_status)
+        if isinstance(day_status, dict):  # several days
+            counter = Counter(v for k, v in day_status.items())
+            print(counter.get(1), counter.get(2))
+            # 不以周末或者法定节假日开始或者结束的情况
+            leave_days_count = counter.get(0)
+            if not day_status.get(day_list[0]) in (1, 2) and not day_status.get(day_list[-1]) in (1, 2):
+                if (start_time == '08:30' and end_time == '13:30') or (start_time == '11:00' and end_time == '17:00'):
+                    leave_days_count -= 0.5
+                elif start_time == '11:00' and end_time == '13:30':
+                    leave_days_count -= 1
+            elif day_status.get(day_list[0]) in (1, 2):  # 以周末或者法定节假日开始的情况
+                if end_time == '13:30':
+                    leave_days_count -= 0.5
+            elif day_status.get(day_list[-1]) in (1, 2):  # 以周末或者法定节假日结束的情况
+                if start_time == '11:00':
+                    leave_days_count -= 0.5
             else:
-                leave_days_count = 1
-        else:
-            leave_days_count = 1
-        if (start_time == '08:30' and end_time == '13:00') or (start_time == '13:00' and end_time == '17:00'):
-            leave_days_count -= 0.5
-        elif start_time == '13:00' and end_time == '13:00':
-            leave_days_count -= 1
-        if day_status == '1' or day_status == '2':  # single day
                 leave_days_count = 0
+        else:  # single day
+            if day_status == 1 or 2:  # single day (weekend or vacation)
+                leave_days_count = 0
+            else:  # working day
+                if (start_time == '08:30' and end_time == '13:30') or (start_time == '11:00' and end_time == '17:00'):
+                    leave_days_count = 0.5
+                elif start_time == '11:00' and end_time == '13:30':
+                    leave_days_count = 0
+                else:
+                    leave_days_count = 0
     else:
         leave_days_count = 0
     return HttpResponse(leave_days_count)
+
+# if (start_time == '08:30' and end_time == '13:30') or (start_time == '11:00' and end_time == '17:00'):
+#                     leave_days_count -= 0.5
+#                 elif start_time == '11:00' and end_time == '13:30':
+#                     leave_days_count -= 1
+
+# counter = Counter(v for k, v in day_status.items())
 
 
 def leave_apply(request):
