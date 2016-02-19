@@ -12,19 +12,20 @@
                 <select name="leave_type">
                     <option value="" disabled selected>请假类型</option>
                     {% if current_user.legal_vacation_days <= 0.0 and current_user.company_vacation_days <= 0.0 %}
-                        <option value="0" disabled="disabled">年假(剩余法定{{ current_user.legal_vacation_days }}天,企业{{ current_user.company_vacation_days }}天)
-                        </option>
+                        <option value="0" disabled="disabled">年假(剩余法定{{ current_user.legal_vacation_days }}天,企业{{ current_user.company_vacation_days }}天)</option>
                         <option value="1">事假</option>
                     {% else %}
-                        <option value="0">年假(剩余法定{{ current_user.legal_vacation_days }}天,企业{{ current_user.company_vacation_days }}天)
-                        </option>
+                        <option value="0">年假(剩余法定{{ current_user.legal_vacation_days }}天,企业{{ current_user.company_vacation_days }}天)</option>
                         <option value="1" disabled="disabled">事假</option>
                     {% endif %}
                     <option value="2">病假</option>
                     <option value="3">产假</option>
                     <option value="7">其他</option>
                 </select>
+
             </div>
+            <span style="display: none" id="legal_vacation_days">{{ current_user.legal_vacation_days }}</span><span
+                style="display: none" id="company_vacation_days">{{ current_user.company_vacation_days }}</span>
 
             <div class="row" style="margin: 0 0 0 10%">
 
@@ -43,9 +44,9 @@
                 <i class="material-icons" style="float: left;font-size: 20px;margin: 5% 0 0 0">&#xe8b5;</i>
 
                 <p class="time_title">开始时间</p>
-                <input name="start_time" type="radio" id="time2" style="margin: -5% 0 0 0" value="13:00"
+                <input name="start_time" type="radio" id="time2" style="margin: -5% 0 0 0" value="11:00"
                        onchange="calculate_leave_day()"/>
-                <label for="time2" style="float: right;margin: 0 5% 0 0">13:00</label>
+                <label for="time2" style="float: right;margin: 0 5% 0 0">11:00</label>
 
 
                 <input name="start_time" type="radio" id="time1" value="08:30" onchange="calculate_leave_day()"/>
@@ -71,8 +72,8 @@
                        onchange="calculate_leave_day()"/>
                 <label for="time4" style="float: right;margin: 0 5% 0 0">17:00</label>
 
-                <input name="end_time" type="radio" id="time3" value="13:00" onchange="calculate_leave_day()"/>
-                <label class="start_time" for="time3">13:00</label>
+                <input name="end_time" type="radio" id="time3" value="13:30" onchange="calculate_leave_day()"/>
+                <label class="start_time" for="time3">13:30</label>
 
             </div>
             <div class="input-field col s12" style="width: 73%;margin: 5% 0 5% 10%;font-size: 1rem">
@@ -150,6 +151,18 @@
             var start_time = $("input[name='start_time']:checked").val()
             var end_time = $("input[name='end_time']:checked").val()
             var message = $("textarea[name='message']").val()
+            var leave_days = parseFloat($('#leave_days').text())  //实际请假天数
+            var legal_vacation_days = parseFloat($('#legal_vacation_days').text()) //法定年假剩余天数
+            var company_vacation_days = parseFloat($('#company_vacation_days').text())  //企业年假剩余天数
+
+            console.log(leave_days, legal_vacation_days, company_vacation_days)
+
+            if (leave_days > legal_vacation_days + company_vacation_days) {
+                Materialize.toast('年假天数不得超过法定和企业年休假之和', 4000)
+                $(this).attr('disabled', false)
+                return
+            }
+
             if (!level_type) {
                 Materialize.toast('请选择请假类型', 4000)
                 $("select[name='leave_type']").click()
