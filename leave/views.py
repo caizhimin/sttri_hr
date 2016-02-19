@@ -135,13 +135,13 @@ def calculate_leave_day(request):
                     leave_days_count -= 0.5
                 elif start_time == '11:00' and end_time == '13:30':
                     leave_days_count -= 1
-            elif day_status.get(day_list[0]) in (1, 2):  # 以周末或者法定节假日开始的情况
+            elif day_status.get(day_list[0]) in (1, 2) and day_status.get(day_list[-1]) == 0:  # 以周末或者法定节假日开始的情况
                 if end_time == '13:30':
                     leave_days_count -= 0.5
-            elif day_status.get(day_list[-1]) in (1, 2):  # 以周末或者法定节假日结束的情况
+            elif day_status.get(day_list[-1]) in (1, 2) and day_status.get(day_list[0]) == 0:  # 以周末或者法定节假日结束的情况
                 if start_time == '11:00':
                     leave_days_count -= 0.5
-            else:
+            else:  # 开始结束 全都是周末或者法定节假日
                 leave_days_count = 0
         else:  # single day
             if day_status == 1 or 2:  # single day (weekend or vacation)
