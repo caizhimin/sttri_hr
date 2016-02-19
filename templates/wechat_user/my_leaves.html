@@ -130,22 +130,53 @@
 
                         </p>
 
-
                         <p class="leave_content" style="text-align: center;margin-bottom: 2%;clear: both">
                             <span class="leave_id" hidden="hidden">{{ i.pk }}</span>
-                            {% if i.status == 3 and i.group != 2 %}
-                                <button id="done_btn_{{ i.pk }}" class="done_btn btn waves-effect waves-light deep-orange lighten-1"
-                                        href="#done_modal">
-                                    销&nbsp;&nbsp;假
-                                </button>
+                        {% if i.group == 1 %}  <!--请假-->
+                            {% if i.type == 2 and not i.attach_photo %}  <!--病假-->
+                                <a href="{% url 'sick_leave_img_upload_page' i.id %}"><button class="btn waves-effect waves-light red lighten-2">
+                                    上传病假/病历证明
+                                </button></a>
+
                             {% endif %}
-                            {% if i.status == 1 %}
+
+                            {% if i.type == 3 and not i.attach_photo %}  <!--产假-->
+                                <a href="{% url 'pregnant_leave_img_upload_page' i.id %}"><button class="btn waves-effect waves-light red lighten-2">
+                                    上传产假证明
+                                </button></a>
+
+                            {% endif %}
+
+                            {% if i.status == 1 %} <!--审核中 可取消, 不可销假-->
                                 <button id="cancel_btn_{{ i.pk }}"
-                                        class="cancel_btn btn waves-effect waves-light teal lighten-1"
+                                        class="cancel_btn btn waves-effect waves-light blue-grey lighten-2"
+                                        href="#cancel_modal">
+                                    取&nbsp;&nbsp;消
+                                </button>
+                            {% elif i.status == 3 %}  <!--已通过  生效时间前可取消， 可销假 -->
+                                {% if i.is_past_due %}
+                                    <button id="done_btn_{{ i.pk }}" class="done_btn btn waves-effect waves-light deep-orange lighten-1"
+                                            href="#done_modal">
+                                        销&nbsp;&nbsp;假
+                                    </button>
+                                {% else %}
+                                    <button id="cancel_btn_{{ i.pk }}"
+                                        class="cancel_btn btn waves-effect waves-light blue-grey lighten-2"
+                                        href="#cancel_modal">
+                                    取&nbsp;&nbsp;消
+                                </button>
+                                {% endif %}
+
+                            {% endif %}
+                        {% else %}  <!--外出-->
+                            {% if i.status == 1 %} <!--审核中 可取消-->
+                                <button id="cancel_btn_{{ i.pk }}"
+                                        class="cancel_btn btn waves-effect waves-light blue-grey lighten-2"
                                         href="#cancel_modal">
                                     取&nbsp;&nbsp;消
                                 </button>
                             {% endif %}
+                        {% endif %}
 
                         </p>
                     </div>
@@ -216,7 +247,6 @@
             );
         });
         $('.cancel_btn').click(function () {
-            $(this).attr('disabled', true)
             $('#cancel_leave_id').text($(this).siblings('.leave_id').text())
 
         })
@@ -235,7 +265,6 @@
         })
 
     $('.done_btn').click(function () {
-            $(this).attr('disabled', true)
             $('#done_leave_id').text($(this).siblings('.leave_id').text())
 
         })
