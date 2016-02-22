@@ -135,10 +135,10 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    },
                    "safe":"0"
                 }
-                 """ % (receive_open_id, AGENT_ID, applicant_name, start_datetime, end_datetime, _type, _type, days)
+                 """ % (receive_open_id, AGENT_ID, applicant_name, start_datetime, end_datetime, _type,  days, _type)
     elif msg_type == '病假审核材料' or msg_type == '产假审核材料':
         content = """
-                {是
+                {
                    "touser": "%s",
                    "msgtype": "text",
                    "agentid": %s,
@@ -148,7 +148,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "safe":"0"
                 }
                  """ % (receive_open_id, AGENT_ID, applicant_name, start_datetime, end_datetime,
-                        _type, _type, days)
+                        _type,  days, _type)
 
     else:  # 拒绝
         content = """
@@ -162,7 +162,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "safe":"0"
                 }
                  """ % (receive_open_id, AGENT_ID, applicant_name, _type, start_datetime, end_datetime, days)
-    print content
+    print content.encode('utf-8')
     requests.post(SEND_MSG_URL % access_token, data=content.encode('utf-8'))
 
 
