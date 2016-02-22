@@ -202,7 +202,7 @@ def leave_apply(request):
                                                    leave_end_datetime=leave_end_datetime, create_time=create_time,
                                                    leave_days=leave_days, leave_reason=message, remark='',
                                                    applicant_name=wxuser.name, applicant_openid=wxuser.wx_openid,
-                                                   status=1, next_dealer=department_timekeeper.id,
+                                                   status=1, next_dealer=department_timekeeper,
                                                    refuse_reason='')[0].id
         # 病产假通知部门考勤员准备查看申请资料
         send_msg(receive_open_id=direct_director.wx_openid, applicant_name=wxuser.name,
