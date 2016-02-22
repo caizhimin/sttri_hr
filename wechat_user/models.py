@@ -3,8 +3,6 @@ from __future__ import unicode_literals
 from datetime import datetime, timedelta
 from django.db import models
 from django.utils.html import format_html
-import pytz
-
 
 
 # Create your models here.
