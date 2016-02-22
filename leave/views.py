@@ -196,14 +196,14 @@ def leave_apply(request):
         if leave_days >= 5:  # 病假超5天或者产假通知李赫
             send_msg('lih', applicant_name=wxuser.department+'部门'+wxuser.name, start_datetime=str(leave_start_datetime),
                      end_datetime=str(leave_end_datetime), _type='病假' if leave_type == '2' else '产假',
-                     days=leave_days, msg_type='apply')
-        new_leave_id = Leave.objects.get_or_create(group=int(group), type=leave_type,
-                                                   leave_start_datetime=leave_start_datetime,
-                                                   leave_end_datetime=leave_end_datetime, create_time=create_time,
-                                                   leave_days=leave_days, leave_reason=message, remark='',
-                                                   applicant_name=wxuser.name, applicant_openid=wxuser.wx_openid,
-                                                   status=1, next_dealer=department_timekeeper,
-                                                   refuse_reason='')[0].id
+                     days=leave_days, msg_type='长病假/产假')
+        new_leave_id = Leave.objects.create(group=int(group), type=leave_type,
+                                            leave_start_datetime=leave_start_datetime,
+                                            leave_end_datetime=leave_end_datetime, create_time=create_time,
+                                            leave_days=leave_days, leave_reason=message, remark='',
+                                            applicant_name=wxuser.name, applicant_openid=wxuser.wx_openid,
+                                            status=1, next_dealer=department_timekeeper,
+                                            refuse_reason='').id
         # 病产假通知部门考勤员准备查看申请资料
         send_msg(receive_open_id=direct_director.wx_openid, applicant_name=wxuser.name,
                  start_datetime=str(leave_start_datetime),

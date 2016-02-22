@@ -112,7 +112,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "safe":"0"
                 }
                  """ % (receive_open_id, AGENT_ID, applicant_name, start_datetime, end_datetime, _type, days)
-    elif _type == '病假' and days >= 5:
+    elif msg_type == '长病假/产假' and days >= 5:
         content = """
                 {
                    "touser": "%s",
