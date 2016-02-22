@@ -83,7 +83,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "msgtype": "text",
                    "agentid": %s,
                    "text": {
-                       "content": "%s, 您好。您的%s申请 %s 至 %s 共 %s 天已通过，请点击申请记录进行查看"
+                       "content": "1%s, 您好。您的%s申请 %s 至 %s 共 %s 天已通过，请点击申请记录进行查看"
                    },
                    "safe":"0"
                 }
@@ -95,7 +95,19 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "msgtype": "text",
                    "agentid": %s,
                    "text": {
-                       "content": "您的部门同事%s申请%s至%s %s 共 %s 天, 请您点击审批按钮进行批准。"
+                       "content": "2您的部门同事%s申请%s至%s %s 共 %s 天, 请您点击审批按钮进行批准。"
+                   },
+                   "safe":"0"
+                }
+                 """ % (receive_open_id, AGENT_ID, applicant_name, start_datetime, end_datetime, _type, days)
+    elif msg_type == 'apply_other_leave':
+        content = """
+                {
+                   "touser": "%s",
+                   "msgtype": "text",
+                   "agentid": %s,
+                   "text": {
+                       "content": "3%s申请%s至%s %s 共 %s 天。"
                    },
                    "safe":"0"
                 }
@@ -107,11 +119,37 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "msgtype": "text",
                    "agentid": %s,
                    "text": {
-                       "content": "%s申请%s至%s %s 共 %s 天, 请注意！"
+                       "content": "4%s申请%s至%s %s 共 %s 天, 请注意！"
                    },
                    "safe":"0"
                 }
                  """ % (receive_open_id, AGENT_ID, applicant_name, start_datetime, end_datetime, _type, days)
+    elif msg_type in ('sick_apply', 'pregnant_apply'):
+        content = """
+                {
+                   "touser": "%s",
+                   "msgtype": "text",
+                   "agentid": %s,
+                   "text": {
+                       "content": "5您的部门同事%s申请%s至%s %s 共 %s 天, 请等待该同事上传%s材料后进行审核。"
+                   },
+                   "safe":"0"
+                }
+                 """ % (receive_open_id, AGENT_ID, applicant_name, start_datetime, end_datetime, _type, _type, days)
+    elif msg_type == '病假审核材料' or msg_type == '产假审核材料':
+        content = """
+                {是
+                   "touser": "%s",
+                   "msgtype": "text",
+                   "agentid": %s,
+                   "text": {
+                       "content": "6您的部门同事%s申请%s至%s %s 共 %s 天, 已上传%s材料，请您点击审批按钮进行材料审核。"
+                   },
+                   "safe":"0"
+                }
+                 """ % (receive_open_id, AGENT_ID, applicant_name, start_datetime, end_datetime,
+                        _type, _type, days)
+
     else:  # 拒绝
         content = """
                 {
@@ -119,11 +157,12 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "msgtype": "text",
                    "agentid": %s,
                    "text": {
-                       "content": "%s, 您好。您的%s申请 %s 至 %s 共 %s 天未通过, 请点击申请记录进行查看。"
+                       "content": "7%s, 您好。您的%s申请 %s 至 %s 共 %s 天未通过, 请点击申请记录进行查看。"
                    },
                    "safe":"0"
                 }
                  """ % (receive_open_id, AGENT_ID, applicant_name, _type, start_datetime, end_datetime, days)
+    print content
     requests.post(SEND_MSG_URL % access_token, data=content.encode('utf-8'))
 
 

@@ -180,36 +180,41 @@ def leave_apply(request):
     end_time = request.POST.get('end_time', '')
     leave_days = float(request.POST.get('leave_days_count', 0))
     user_id = request.session.get('user_id')
-    wxuser = WXUser.objects.get(wx_openid='8888')
+    wxuser = WXUser.objects.get(wx_openid=user_id)
     create_time = datetime.datetime.now()
     leave_start_datetime = start_date + ' ' + start_time
     leave_end_datetime = end_date + ' ' + end_time
-
+    department_timekeeper = WXUser.objects.get(department=wxuser.department, is_timekeeper=1)
     # send Email
     direct_director = WXUser.objects.get(pk=wxuser.direct_director.pk)
     direct_director_email = direct_director.email
     direct_director_name = direct_director.name
     # send_email('jack_czm@vip.sina.com', direct_director_email, direct_director_name, wxuser.name, leave_start_datetime,
     #            leave_end_datetime, leave_days, '请假', 'apply')
-    send_msg(receive_open_id=direct_director.wx_openid, applicant_name=wxuser.name,
-             start_datetime=str(leave_start_datetime),
-             end_datetime=str(leave_end_datetime), _type='请假', days=leave_days, msg_type='apply')
+
     if group == '1' and leave_type in ('2', '3'):  # 病假or产假 , 返回新增leave_id用于上传图片页面
-        if leave_days >= 5 and leave_type == '2':  # 病假超5天通知李赫
+        if leave_days >= 5:  # 病假超5天或者产假通知李赫
             send_msg('lih', applicant_name=wxuser.department+'部门'+wxuser.name, start_datetime=str(leave_start_datetime),
-                     end_datetime=str(leave_end_datetime), _type='病假', days=leave_days, msg_type='apply')
+                     end_datetime=str(leave_end_datetime), _type='病假' if leave_type == '2' else '产假',
+                     days=leave_days, msg_type='apply')
         new_leave_id = Leave.objects.get_or_create(group=int(group), type=leave_type,
                                                    leave_start_datetime=leave_start_datetime,
                                                    leave_end_datetime=leave_end_datetime, create_time=create_time,
                                                    leave_days=leave_days, leave_reason=message, remark='',
                                                    applicant_name=wxuser.name, applicant_openid=wxuser.wx_openid,
-                                                   status=1, next_dealer=wxuser.direct_director, refuse_reason='')[0].id
+                                                   status=1, next_dealer=department_timekeeper.wx_openid,
+                                                   refuse_reason='')[0].id
+        # 病产假通知部门考勤员准备查看申请资料
+        send_msg(receive_open_id=direct_director.wx_openid, applicant_name=wxuser.name,
+                 start_datetime=str(leave_start_datetime),
+                 end_datetime=str(leave_end_datetime), _type='病假' if leave_type == '2' else '产假',
+                 days=leave_days, msg_type='sick_apply' if leave_type == '2' else 'pregnant_apply')
         if leave_type == '2':
             return HttpResponse(json.dumps({'leave_type': 'sick_leave', 'new_leave_id': new_leave_id}))
         else:
             return HttpResponse(json.dumps({'leave_type': 'pregnant_leave', 'new_leave_id': new_leave_id}))
-    else:  # 事假or年假
 
+    elif leave_type in ('0', '1'):  # 事假or年假
         Leave.objects.create(group=int(group), type=leave_type, leave_start_datetime=leave_start_datetime,
                              leave_end_datetime=leave_end_datetime, create_time=create_time, leave_days=leave_days,
                              leave_reason=message, remark='', applicant_name=wxuser.name,
@@ -223,6 +228,15 @@ def leave_apply(request):
                 wxuser.company_vacation_days -= (leave_days - wxuser.legal_vacation_days)
                 wxuser.legal_vacation_days = 0
             wxuser.save()
+        send_msg(receive_open_id=direct_director.wx_openid, applicant_name=wxuser.name,
+                 start_datetime=str(leave_start_datetime),
+                 end_datetime=str(leave_end_datetime), _type='请假', days=leave_days, msg_type='apply')
+
+    else:  # 其他假期通知李赫
+        send_msg(receive_open_id=direct_director.wx_openid, applicant_name=wxuser.name,
+                 start_datetime=str(leave_start_datetime),
+                 end_datetime=str(leave_end_datetime), _type='其他请假'+'(理由:'+message+')',
+                 days=leave_days, msg_type='apply_other_leave')
     return HttpResponse(json.dumps({'leave_type': 'leaves'}))
 
 
@@ -278,7 +292,16 @@ def approve(request):
     print('result', result)
     if result == 'agree':  # 同意
         if leave.group == 1:  # 同意请假
-            if int(applicant_wx_user.direct_director_id) == next_dealer_id:  # 第一级审批, 即直接主管审批
+            if leave.type in (1, 2) and WXUser.objects.get(wx_openid=next_dealer_id).is_timekeeper == 1:
+                # 病产假让部门考勤员审核
+                direct_director_id = applicant_wx_user.direct_director_id
+                direct_director = WXUser.objects.get(pk=direct_director_id)
+                leave.next_dealer_id = direct_director
+                send_msg(receive_open_id=direct_director.wx_openid, applicant_name=applicant_wx_user.name,
+                         start_datetime=str(leave.leave_start_datetime),
+                         end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
+                         days=leave.leave_days,  msg_type='agree')
+            elif int(applicant_wx_user.direct_director_id) == next_dealer_id:  # 第一级审批, 即直接主管审批
                 dept_leader_id = applicant_wx_user.dept_leader_id
                 dept_leader = WXUser.objects.get(pk=dept_leader_id)
                 leave.next_dealer_id = dept_leader_id
@@ -291,13 +314,13 @@ def approve(request):
                          end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
                          days=leave.leave_days,  msg_type='agree')
 
-            if int(applicant_wx_user.dept_leader_id) == next_dealer_id:  # 第二级审批, 即部门领导审批
+            elif int(applicant_wx_user.dept_leader_id) == next_dealer_id:  # 第二级审批, 即部门领导审批
                 if leave.leave_days > 1 and leave.type == 1:  # 如果是事假且大于1天，通知HR部门审批
-                    leave.next_dealer_id = 12  # todo 先假设HR审批账号id为999
+                    leave.next_dealer_id = 999  # todo 先假设HR审批账号id为999
                     # send_email('jack_czm@vip.sina.com', 'HR@com', applicant_wx_user.name,  # todo HR邮箱待填写
                     #            applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
                     #            leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
-                    send_msg(receive_open_id='tany', applicant_name=applicant_wx_user.name,
+                    send_msg(receive_open_id='lih', applicant_name=applicant_wx_user.name,
                              start_datetime=str(leave.leave_start_datetime),
                              end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
                              days=leave.leave_days,  msg_type='agree')
@@ -315,7 +338,7 @@ def approve(request):
                              end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
                              days=leave.leave_days,  msg_type='approve')
 
-            if leave.next_dealer_id == 999 and leave.type == 1:  # todo HR审批大于1天的事假
+            elif leave.next_dealer_id == 999 and leave.type == 1:  # todo HR审批大于1天的事假
                 leave.next_dealer_id = None
                 leave.status = 3
                 leave.deal_end_time = datetime.datetime.now()
@@ -345,7 +368,7 @@ def approve(request):
                 # send_email('jack_czm@vip.sina.com', 'HR@com', applicant_wx_user.name,  # todo HR邮箱待填写
                 #            applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
                 #            leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
-                send_msg(receive_open_id='tany', applicant_name=applicant_wx_user.name,
+                send_msg(receive_open_id='lih', applicant_name=applicant_wx_user.name,
                          start_datetime=str(leave.leave_start_datetime),
                          end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
                          days=leave.leave_days,  msg_type='approve')
@@ -369,7 +392,7 @@ def approve(request):
         leave.refuse_reason = refuse_reason
         leave.save()
         if leave.type == 0:  # 拒绝年假后需给申请者补上年假数
-            applicant_wx_user.company_vacation_days += leave.leave_days  # todo 这里没有考虑补企业年假OR法定年假，待修改
+            applicant_wx_user.legal_vacation_days += leave.leave_days  # todo 这里没有考虑补企业年假OR法定年假，待修改
             applicant_wx_user.save()
         return HttpResponse('Reject')
 
@@ -425,6 +448,16 @@ def sick_leave_img_upload_page(request, pk):
         if img_str and sick_leave:
             sick_leave.attach_photo = img_str
             sick_leave.save()
+            # 通知部门考勤员
+            applicant_user_id = sick_leave.applicant_openid
+            applicant = WXUser.objects.get(wx_openid=applicant_user_id)
+            try:
+                department_timekeeper = WXUser.get(department=applicant.department, is_timekeeper=1)
+                send_msg(receive_open_id=department_timekeeper.wx_openid, applicant_name=applicant.name,
+                         start_datetime=sick_leave.leave_start_datetime, end_datetime=sick_leave.leave_end_datetime,
+                         _type='病假', days=sick_leave.leave_days, msg_type='病假审核材料')
+            except Exception, error:
+                pass
             return HttpResponse('Success')
         else:
             return HttpResponseServerError()
@@ -444,6 +477,16 @@ def pregnant_leave_img_upload_page(request, pk):
         if img_str and sick_leave:
             sick_leave.attach_photo = img_str
             sick_leave.save()
+            # 通知部门考勤员
+            applicant_user_id = sick_leave.applicant_openid
+            applicant = WXUser.objects.get(wx_openid=applicant_user_id)
+            try:
+                department_timekeeper = WXUser.get(department=applicant.department, is_timekeeper=1)
+                send_msg(receive_open_id=department_timekeeper.wx_openid, applicant_name=applicant.name,
+                         start_datetime=sick_leave.leave_start_datetime, end_datetime=sick_leave.leave_end_datetime,
+                         _type='产假', days=sick_leave.leave_days, msg_type='产假审核材料')
+            except Exception, error:
+                pass
             return HttpResponse('Success')
         else:
             return HttpResponseServerError()
@@ -457,7 +500,9 @@ def img_upload(request):
     :return:
     """
     img = request.FILES.get('img')
+    print(img)
     i_img = Image.open(img)
+    print(i_img)
     i_img.thumbnail((500, 500), Image.ANTIALIAS)
     b = io.BytesIO()
     i_img.save(b, 'JPEG')  # 存入缓存

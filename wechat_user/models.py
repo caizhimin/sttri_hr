@@ -1,8 +1,10 @@
 # coding: utf8
 from __future__ import unicode_literals
-
+from datetime import datetime, timedelta
 from django.db import models
 from django.utils.html import format_html
+import pytz
+
 
 
 # Create your models here.
@@ -29,13 +31,14 @@ LEAVE_TYPE_LIST = (
 
 LEAVE_MESSAGE_STATUS = (
     (0, u'已取消'),
-    (1, u'审核中'),
+    (1, u'审核中'),  # 可取消, 不可销假
     (2, u'未通过', ),
-    (3, u'已通过'),
+    (3, u'已通过'),  # 生效时间前可取消， 可销假
     (4, u'已完成'),
 )
 
 IS_LEADER_STATUS = ((0, '否'), (1, '是'))
+IS_TIMEKEEPER_STATUS = IS_LEADER_STATUS
 
 
 class WXUser(models.Model):
@@ -55,7 +58,8 @@ class WXUser(models.Model):
     company_working_years = models.IntegerField(verbose_name='企业工作年限')
     legal_vacation_days = models.FloatField(default=5, verbose_name='剩余法定年假数')
     company_vacation_days = models.FloatField(default=0, verbose_name='剩余企业年假数')
-    is_leader = models.IntegerField(choices=IS_LEADER_STATUS, verbose_name='是否为中层管理')
+    is_leader = models.IntegerField(choices=IS_LEADER_STATUS, verbose_name='是否为管理序列')
+    is_timekeeper = models.IntegerField(choices=IS_TIMEKEEPER_STATUS, default=0, verbose_name='是否为部门考勤员')
 
     def __unicode__(self):
         return self.name
@@ -92,6 +96,13 @@ class Leave(models.Model):
                                (attach_photo['sick_level_img'], attach_photo['sick_history_img']))
         else:
             return '无'
+
+    @property
+    def is_past_due(self):
+        print(datetime.now(),self.leave_start_datetime)
+        if datetime.utcnow()> self.leave_start_datetime:
+            return True
+        return False
 
     show_attach_photo_for_admin.short_description = '附件图片'
 
