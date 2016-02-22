@@ -137,14 +137,20 @@
                                 <a href="{% url 'sick_leave_img_upload_page' i.id %}"><button class="btn waves-effect waves-light red lighten-2">
                                     上传病假/病历证明
                                 </button></a>
-
+                            {% else %}
+                                <a href="{% url 'sick_leave_img_upload_page' i.id %}"><button class="btn waves-effect waves-light deep-orange lighten-3">
+                                    更新病假/病历证明
+                                </button></a>
                             {% endif %}
 
                             {% if i.type == 3 and not i.attach_photo %}  <!--产假-->
                                 <a href="{% url 'pregnant_leave_img_upload_page' i.id %}"><button class="btn waves-effect waves-light red lighten-2">
                                     上传产假证明
                                 </button></a>
-
+                            {% else %}
+                                <a href="{% url 'sick_leave_img_upload_page' i.id %}"><button class="btn waves-effect waves-light deep-orange lighten-3">
+                                    更新产假证明
+                                </button></a>
                             {% endif %}
 
                             {% if i.status == 1 %} <!--审核中 可取消, 不可销假-->
