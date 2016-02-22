@@ -452,7 +452,7 @@ def sick_leave_img_upload_page(request, pk):
             applicant_user_id = sick_leave.applicant_openid
             applicant = WXUser.objects.get(wx_openid=applicant_user_id)
             try:
-                department_timekeeper = WXUser.get(department=applicant.department, is_timekeeper=1)
+                department_timekeeper = WXUser.objects.get(department=applicant.department, is_timekeeper=1)
                 send_msg(receive_open_id=department_timekeeper.wx_openid, applicant_name=applicant.name,
                          start_datetime=sick_leave.leave_start_datetime, end_datetime=sick_leave.leave_end_datetime,
                          _type='病假', days=sick_leave.leave_days, msg_type='病假审核材料')
@@ -481,7 +481,7 @@ def pregnant_leave_img_upload_page(request, pk):
             applicant_user_id = sick_leave.applicant_openid
             applicant = WXUser.objects.get(wx_openid=applicant_user_id)
             try:
-                department_timekeeper = WXUser.get(department=applicant.department, is_timekeeper=1)
+                department_timekeeper = WXUser.objects.get(department=applicant.department, is_timekeeper=1)
                 send_msg(receive_open_id=department_timekeeper.wx_openid, applicant_name=applicant.name,
                          start_datetime=sick_leave.leave_start_datetime, end_datetime=sick_leave.leave_end_datetime,
                          _type='产假', days=sick_leave.leave_days, msg_type='产假审核材料')
