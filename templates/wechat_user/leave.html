@@ -157,7 +157,7 @@
 
             console.log(leave_days, legal_vacation_days, company_vacation_days)
 
-            if (leave_days > legal_vacation_days + company_vacation_days) {
+            if (level_type == 0 && leave_days > legal_vacation_days + company_vacation_days) {
                 Materialize.toast('年假天数不得超过法定和企业年休假之和', 4000)
                 $(this).attr('disabled', false)
                 return
