@@ -457,7 +457,7 @@ def sick_leave_img_upload_page(request, pk):
                          start_datetime=sick_leave.leave_start_datetime, end_datetime=sick_leave.leave_end_datetime,
                          _type='病假', days=sick_leave.leave_days, msg_type='病假审核材料')
             except Exception, error:
-                pass
+                print(error)
             return HttpResponse('Success')
         else:
             return HttpResponseServerError()
