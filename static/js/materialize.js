@@ -8234,7 +8234,7 @@ Materialize.toast = function (message, displayLength, className, completeCallbac
             // Today and clear
             today: '今日',
             clear: '清除',
-            close: '关闭',
+            close: '确定',
 
             // The format to show on the `input` element
             format: 'yyyy-mm-dd',
