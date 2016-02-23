@@ -80,7 +80,7 @@ class Leave(models.Model):
     applicant_openid = models.CharField(max_length=50, blank=True, verbose_name='申请者微信open_id')
     status = models.IntegerField(choices=LEAVE_MESSAGE_STATUS, verbose_name='状态')
     next_dealer = models.ForeignKey(WXUser, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='下个审核人')
-    all_dealers = models.CharField(max_length=10, null=True, blank=True, verbose_name='审批过的人')
+    all_dealers = models.CharField(max_length=10, blank=True, default='', verbose_name='审批过的人')
     deal_end_time = models.DateTimeField(null=True, verbose_name='审批结束时间')
     refuse_reason = models.TextField(blank=True, verbose_name='拒绝原因')
     attach_photo = models.TextField(blank=True, verbose_name='上传附件图片')  # 为字典形式的字符串
