@@ -133,7 +133,7 @@
                         <p class="leave_content" style="text-align: center;margin-bottom: 2%;clear: both">
                             <span class="leave_id" hidden="hidden">{{ i.pk }}</span>
                         {% if i.group == 1 %}  <!--请假-->
-                            {% if i.type == 2 %}  <!--病假-->
+                            {% if i.type == 2 and i.status != 0 %}  <!--病假-->
                                 {% if not i.attach_photo %}
                                     <a href="{% url 'sick_leave_img_upload_page' i.id %}"><button class="btn waves-effect waves-light red lighten-2">
                                         上传病假/病历证明
@@ -151,7 +151,7 @@
                                         上传产假证明
                                     </button></a>
                                 {% else %}
-                                    <a href="{% url 'sick_leave_img_upload_page' i.id %}"><button class="btn waves-effect waves-light deep-orange lighten-3">
+                                    <a href="{% url 'pregnant_leave_img_upload_page' i.id %}"><button class="btn waves-effect waves-light deep-orange lighten-3">
                                         更新产假证明
                                     </button></a>
                                 {% endif %}

@@ -289,10 +289,9 @@ def approve(request):
     refuse_reason = request.POST.get('refuse_reason', '')
     applicant_wx_user = WXUser.objects.get(wx_openid=applicant_wx_openid)
     leave = Leave.objects.get(pk=leave_id)
-    print('result', result)
     if result == 'agree':  # 同意
         if leave.group == 1:  # 同意请假
-            if leave.type in (1, 2) and WXUser.objects.get(wx_openid=next_dealer_id).is_timekeeper == 1:
+            if leave.type in (1, 2) and WXUser.objects.get(id=next_dealer_id).is_timekeeper == 1:
                 # 病产假让部门考勤员审核
                 direct_director_id = applicant_wx_user.direct_director_id
                 direct_director = WXUser.objects.get(pk=direct_director_id)
@@ -301,6 +300,35 @@ def approve(request):
                          start_datetime=str(leave.leave_start_datetime),
                          end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
                          days=leave.leave_days,  msg_type='agree')
+            # 先判断是不是部门领导，如果判断是的话就直接通过了，有可能部门领导和直接主管是同一人
+            elif int(applicant_wx_user.dept_leader_id) == next_dealer_id:  # 第二级审批, 即部门领导审批
+                if leave.leave_days > 1 and leave.type == 1:  # 部门领导审批通过, 如果是事假且大于1天，跳转通知HR部门审批
+                    leave.next_dealer_id = 999  # todo 先假设HR审批账号id为999
+                    # send_email('jack_czm@vip.sina.com', 'HR@com', applicant_wx_user.name,  # todo HR邮箱待填写
+                    #            applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
+                    #            leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
+                    send_msg(receive_open_id='lih', applicant_name=applicant_wx_user.name,
+                             start_datetime=str(leave.leave_start_datetime),
+                             end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
+                             days=leave.leave_days,  msg_type='agree')
+
+                # 部门领导审批通过
+                else:
+                    leave.next_dealer_id = None
+                    leave.status = 3
+                    leave.deal_end_time = datetime.datetime.now()
+                    # 发邮件给申请者, 通知审批通过
+                    # send_email('jack_czm@vip.sina.com', applicant_wx_user.email, applicant_wx_user.name,
+                    #            applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
+                    #            leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
+                    send_msg(receive_open_id=applicant_wx_user.wx_openid, applicant_name=applicant_wx_user.name,
+                             start_datetime=str(leave.leave_start_datetime),
+                             end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
+                             days=leave.leave_days,  msg_type='approve')
+
+                # 部门领导同意后加入 all_dealers
+                leave.all_dealers += str(applicant_wx_user.dept_leader_id) + ' '
+
             elif int(applicant_wx_user.direct_director_id) == next_dealer_id:  # 第一级审批, 即直接主管审批
                 dept_leader_id = applicant_wx_user.dept_leader_id
                 dept_leader = WXUser.objects.get(pk=dept_leader_id)
@@ -314,29 +342,8 @@ def approve(request):
                          end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
                          days=leave.leave_days,  msg_type='agree')
 
-            elif int(applicant_wx_user.dept_leader_id) == next_dealer_id:  # 第二级审批, 即部门领导审批
-                if leave.leave_days > 1 and leave.type == 1:  # 如果是事假且大于1天，通知HR部门审批
-                    leave.next_dealer_id = 999  # todo 先假设HR审批账号id为999
-                    # send_email('jack_czm@vip.sina.com', 'HR@com', applicant_wx_user.name,  # todo HR邮箱待填写
-                    #            applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
-                    #            leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
-                    send_msg(receive_open_id='lih', applicant_name=applicant_wx_user.name,
-                             start_datetime=str(leave.leave_start_datetime),
-                             end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
-                             days=leave.leave_days,  msg_type='agree')
-
-                else:
-                    leave.next_dealer_id = None
-                    leave.status = 3
-                    leave.deal_end_time = datetime.datetime.now()
-                    # 发邮件给申请者, 通知审批通过
-                    # send_email('jack_czm@vip.sina.com', applicant_wx_user.email, applicant_wx_user.name,
-                    #            applicant_wx_user.name, leave.leave_start_datetime, leave.leave_end_datetime,
-                    #            leave.leave_days, '请假' if leave.group == 1 else '外出', 'agree')
-                    send_msg(receive_open_id=applicant_wx_user.wx_openid, applicant_name=applicant_wx_user.name,
-                             start_datetime=str(leave.leave_start_datetime),
-                             end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
-                             days=leave.leave_days,  msg_type='approve')
+                # 直接主管同意后加入 all_dealers
+                leave.all_dealers += str(applicant_wx_user.direct_director_id) + ' '
 
             elif leave.next_dealer_id == 999 and leave.type == 1:  # todo HR审批大于1天的事假
                 leave.next_dealer_id = None
@@ -351,7 +358,15 @@ def approve(request):
                          start_datetime=str(leave.leave_start_datetime),
                          end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
                          days=leave.leave_days,  msg_type='approve')
+
+                # 人事同意后加入 all_dealers
+                leave.all_dealers += '999' + ' '
+
         else:  # 同意外出
+
+            # 直接主管同意后加入 all_dealers
+            leave.all_dealers += str(applicant_wx_user.direct_director_id) + ' '
+
             leave.next_dealer_id = None
             leave.status = 3
             leave.deal_end_time = datetime.datetime.now()
@@ -386,6 +401,10 @@ def approve(request):
                  start_datetime=str(leave.leave_start_datetime),
                  end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
                  days=leave.leave_days,  msg_type='reject')
+
+        # 直接主管同意后加入 all_dealers
+        leave.all_dealers += str(next_dealer_id) + ' '
+
         leave.next_dealer_id = None
         leave.status = 2
         leave.deal_end_time = datetime.datetime.now()

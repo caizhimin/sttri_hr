@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load custom_tags %}
+{% block extra_css %}
+    <style>
+        .leave_content {
+            font-size: 86% !important;;
+            padding-top: 2% !important;;
+            padding-bottom: 2% !important;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+
+    <div style="text-align: center;margin: 2% 0 1% 0">
+        <div class="chip  blue-grey lighten-2">
+            已取消
+        </div>
+        <div class="chip teal lighten-1">
+            审核中
+        </div>
+        <div class="chip blue lighten-1">
+            未通过
+        </div>
+        <div class="chip deep-orange lighten-1">
+            已通过
+        </div>
+        <div class="chip green lighten-1">
+            已结束
+        </div>
+    </div>
+
+    {% if approved_leaves %}
+        <ul class="collapsible popout" data-collapsible="accordion">
+            {% for i in approved_leaves %}
+                <li class="list" id="{{ i.pk }}">
+                    {% if i.status == 0 %}
+                        <div id="title_{{ i.pk }}"
+                             class="collapsible-header waves-effect waves-light  blue-grey lighten-2"
+                             style="color: #ffffff;font-size: 74%">
+                    {% elif i.status == 1 %}
+                        <div id="title_{{ i.pk }}" class="collapsible-header waves-effect waves-light teal lighten-1"
+                             style="color: #ffffff;font-size: 74%">
+                    {% elif i.status == 2 %}
+                        <div id="title_{{ i.pk }}" class="collapsible-header waves-effect waves-light blue lighten-1"
+                             style="color: #ffffff;font-size: 74%">
+                    {% elif i.status == 3 %}
+                        <div id="title_{{ i.pk }}"
+                             class="collapsible-header waves-effect waves-light deep-orange lighten-1"
+                             style="color: #ffffff;font-size: 74%">
+                    {% elif i.status == 4 %}
+                        <div id="title_{{ i.pk }}" class="collapsible-header waves-effect waves-light green lighten-1"
+                             style="color: #ffffff;font-size: 74%">
+                    {% else %}
+                    {% endif %}
+                    <span style="float: left">{{ i.applicant_name }}</span>
+
+                        <span style="float: right;margin: 0 0 0 10px">
+                            <span>
+                        {% if i.type == 0 %}
+                            年假
+                        {% elif i.type == 1 %}
+                            事假
+                        {% elif i.type == 2 %}
+                            病假
+                        {% elif i.type == 3 %}
+                            产假
+                        {% elif i.type == 4 %}
+                            会议
+                        {% elif i.type == 5 %}
+                            培训
+                        {% elif i.type == 6 %}
+                            出差
+                        {% elif i.type == 7 %}
+                            其他
+                        {% endif %}
+                    </span>
+
+                        </span>
+                <span style="float: right">
+                    {{ i.leave_start_datetime|date:"Y年m月d日" }}至{{ i.leave_end_datetime|date:"Y年m月d日" }}
+                </span>
+
+
+                    </div>
+                    <div class="collapsible-body">
+                        <p class="leave_content">{{ i.leave_start_datetime }}至{{ i.leave_end_datetime }}</p>
+
+                        <p class="leave_content">
+                            共计
+                    <span style="color: red">
+                    {{ i.leave_days }}
+                    </span>
+                            天
+                    <span style="color: red">
+                        {% if i.type == 0 %}
+                            年假
+                        {% elif i.type == 1 %}
+                            事假
+                        {% elif i.type == 2 %}
+                            病假
+                        {% elif i.type == 3 %}
+                            产假
+                        {% elif i.type == 4 %}
+                            会议
+                        {% elif i.type == 5 %}
+                            培训
+                        {% elif i.type == 6 %}
+                            出差
+                        {% elif i.type == 7 %}
+                            其他
+                        {% endif %}
+                    </span>
+
+                        </p>
+
+                        <p class="leave_content">{{ i.leave_reason }}</p>
+
+                        <p class="leave_content">
+                            {% if i.attach_photo %}
+                                {% if i.type == 2 %}  <!--病假显示2张图片-->
+                                    <img width="45%" class="materialboxed" data-caption="病假证明"
+                                         src="{{ i.attach_photo|get_sick_level_img }}"
+                                         style="float: left;margin: 0 0 5% 0">
+                                    <img width="45%" class="materialboxed" data-caption="病历证明"
+                                         src="{{ i.attach_photo|get_sick_history_img }}"
+                                         style="float: right;margin: 0 0 5% 0">
+                                {% endif %}
+
+                                {% if i.type == 3 %} <!--产假显示2张图片-->
+                                    <img width="45%" class="materialboxed" data-caption="生育医学证明"
+                                         src="{{ i.attach_photo|get_sick_level_img }}"
+                                         style="float: left;margin: 0 0 5% 0">
+                                    <img width="45%" class="materialboxed" data-caption="生育保险待遇支付核定表"
+                                         src="{{ i.attach_photo|get_sick_history_img }}"
+                                         style="float: right;margin: 0 0 5% 0">
+                                {% endif %}
+
+                            {% else %}
+                                {% if i.group == 1 %}
+                                    {% if i.type == 2 %}
+                                        还未上传病假/病历证明
+                                    {% elif i.type == 3 %}
+                                        还未上传生育医学证明/生育保险待遇支付核定表
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+
+                        </p>
+
+                        <p class="leave_content" style="text-align: center;margin-bottom: 2%;clear: both">
+                        </p>
+
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div id="binding" style="text-align: center; margin:15% 0 10% 0">
+
+            <div style=" margin:0 0 10% 0">
+                <p style="margin-bottom: 3%;">您当前没有审批过的请假/外出记录</p>
+            </div>
+
+        </div>
+    {% endif %}
+
+
+
+
+
+
+{% endblock %}
