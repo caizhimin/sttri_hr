@@ -357,9 +357,6 @@ def approve(request):
 
         else:  # 同意外出
 
-            # 直接主管同意后加入 all_dealers
-            leave.all_dealers += direct_director.wx_openid + ' '
-
             leave.next_dealer_id = None
             leave.status = 3
             leave.deal_end_time = datetime.datetime.now()
