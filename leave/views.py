@@ -416,9 +416,18 @@ def cancel(request):
     """
     leave_id = request.POST.get('leave_id', '')
     leave = Leave.objects.get(pk=leave_id)
+    all_dealers = leave.all_dealers
+    next_dealer_id = leave.next_dealer_id
+    if next_dealer_id:  # 通知下一个审批者
+        next_dealer_user_id = WXUser.objects.get(pk=next_dealer_id).wx_openid
+        send_msg(next_dealer_user_id, leave.applicant_name, leave.leave_start_datetime,
+                 leave.leave_end_datetime, leave.type, leave.leave_days, 'cancel')
+    if all_dealers:  # 通知审批过的人
+        for i in all_dealers.split(' '):  # ['test', 'lih']
+            send_msg(i, leave.applicant_name, leave.leave_start_datetime,
+                     leave.leave_end_datetime, leave.type, leave.leave_days, 'cancel')
     leave.status = 0
     leave.save()
-    # TODO 通知领导取消
     return HttpResponse('Success')
 
 

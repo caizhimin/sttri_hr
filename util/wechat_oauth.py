@@ -149,6 +149,19 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                 }
                  """ % (receive_open_id, AGENT_ID, applicant_name, start_datetime, end_datetime,
                         _type,  days, _type)
+    elif msg_type == 'cancel':
+        content = """
+                {
+                   "touser": "%s",
+                   "msgtype": "text",
+                   "agentid": %s,
+                   "text": {
+                       "content": "7%s申请%s至%s %s 共 %s 天, 已取消申请。"
+                   },
+                   "safe":"0"
+                }
+                 """ % (receive_open_id, AGENT_ID, applicant_name, start_datetime, end_datetime,
+                        _type,  days)
 
     else:  # 拒绝
         content = """
@@ -157,7 +170,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "msgtype": "text",
                    "agentid": %s,
                    "text": {
-                       "content": "7%s, 您好。您的%s申请 %s 至 %s 共 %s 天未通过, 请点击申请记录进行查看。"
+                       "content": "8%s, 您好。您的%s申请 %s 至 %s 共 %s 天未通过, 请点击申请记录进行查看。"
                    },
                    "safe":"0"
                 }
