@@ -380,8 +380,8 @@ def approve(request):
                          start_datetime=str(leave.leave_start_datetime),
                          end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
                          days=leave.leave_days,  msg_type='approve')
-
-        leave.next_dealer_id += (next_dealer.wx_openid + ' ')
+        # 同意后加入 all_dealers
+        leave.all_dealers += (next_dealer.wx_openid + ' ')
         leave.save()
         return HttpResponse('Agree')
 
@@ -396,9 +396,9 @@ def approve(request):
                  end_datetime=str(leave.leave_end_datetime), _type='请假' if leave.group == 1 else '外出',
                  days=leave.leave_days,  msg_type='reject')
 
-        # 某个流程拒绝后加入 all_dealers
+        # 拒绝后加入 all_dealers
 
-        leave.all_dealers += str(next_dealer_id) + ' '
+        leave.all_dealers += (next_dealer.wx_openid + ' ')
 
         leave.next_dealer_id = None
         leave.status = 2
