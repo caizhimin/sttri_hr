@@ -162,11 +162,8 @@ def approved_record(request):
             return HttpResponseRedirect('/binding')
         else:
             current_user = WXUser.objects.get(wx_openid=user_id)
-            if current_user.is_timekeeper == 0:
-                # 审批过的中的请假/外出记录
-                approved_leaves = Leave.objects.filter(all_dealers__contains=user_id).order_by('-create_time')
-            else:
-                approved_leaves = ''
+            # 审批过的中的请假/外出记录
+            approved_leaves = Leave.objects.filter(all_dealers__contains=user_id).order_by('-create_time')
         return render_to_response('approve_record.html', {'approved_leaves': approved_leaves},
                                   context_instance=RequestContext(request))
     return HttpResponseRedirect(get_code_url('http://wachat.sttri.com.cn/approve'))
