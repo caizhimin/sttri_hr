@@ -427,6 +427,7 @@ def cancel(request):
             send_msg(i, leave.applicant_name, leave.leave_start_datetime,
                      leave.leave_end_datetime, leave.type, leave.leave_days, 'cancel')
     leave.status = 0
+    leave.next_dealer_id = None
     leave.save()
     return HttpResponse('Success')
 
