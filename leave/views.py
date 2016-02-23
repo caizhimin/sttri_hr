@@ -288,13 +288,16 @@ def approve(request):
     result = request.POST.get('result', '')
     refuse_reason = request.POST.get('refuse_reason', '')
     applicant_wx_user = WXUser.objects.get(wx_openid=applicant_wx_openid)
+    direct_director_id = applicant_wx_user.direct_director_id
+    direct_director = WXUser.objects.get(pk=direct_director_id)
+    dept_leader_id = applicant_wx_user.dept_leader_id
+    dept_leader = WXUser.objects.get(pk=dept_leader_id)
     leave = Leave.objects.get(pk=leave_id)
     if result == 'agree':  # 同意
         if leave.group == 1:  # 同意请假
             if leave.type in (1, 2) and WXUser.objects.get(id=next_dealer_id).is_timekeeper == 1:
-                # 病产假让部门考勤员审核
-                direct_director_id = applicant_wx_user.direct_director_id
-                direct_director = WXUser.objects.get(pk=direct_director_id)
+                # 考勤员审核病产假通过后传给直接主管
+
                 leave.next_dealer_id = direct_director
                 send_msg(receive_open_id=direct_director.wx_openid, applicant_name=applicant_wx_user.name,
                          start_datetime=str(leave.leave_start_datetime),
@@ -327,11 +330,9 @@ def approve(request):
                              days=leave.leave_days,  msg_type='approve')
 
                 # 部门领导同意后加入 all_dealers
-                leave.all_dealers += str(applicant_wx_user.dept_leader_id) + ' '
+                leave.all_dealers += dept_leader.wx_openid + ' '
 
             elif int(applicant_wx_user.direct_director_id) == next_dealer_id:  # 第一级审批, 即直接主管审批
-                dept_leader_id = applicant_wx_user.dept_leader_id
-                dept_leader = WXUser.objects.get(pk=dept_leader_id)
                 leave.next_dealer_id = dept_leader_id
                 # 发邮件给直接主管审批
                 # send_email('jack_czm@vip.sina.com', dept_leader.email, dept_leader.name, applicant_wx_user.name,
@@ -343,7 +344,7 @@ def approve(request):
                          days=leave.leave_days,  msg_type='agree')
 
                 # 直接主管同意后加入 all_dealers
-                leave.all_dealers += str(applicant_wx_user.direct_director_id) + ' '
+                leave.all_dealers += direct_director_id.wx_openid + ' '
 
             elif leave.next_dealer_id == 999 and leave.type == 1:  # todo HR审批大于1天的事假
                 leave.next_dealer_id = None
@@ -360,7 +361,7 @@ def approve(request):
                          days=leave.leave_days,  msg_type='approve')
 
                 # 人事同意后加入 all_dealers
-                leave.all_dealers += '999' + ' '
+                leave.all_dealers += 'lih' + ' '
 
         else:  # 同意外出
 

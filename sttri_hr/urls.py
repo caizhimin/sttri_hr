@@ -17,6 +17,7 @@ Including another URLconf
     3. Add a URL to urlpatterns:  url(r'^blog/', include(blog_urls))
 """
 import os
+import datetime
 from django.conf.urls import patterns, url, include
 from django.contrib import admin
 from django.shortcuts import render_to_response
@@ -32,6 +33,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 def binding(request):
     if request.method == 'POST':
         user_id = request.session.get('user_id')
+        print('user_id', user_id)
         name = request.POST.get('name')
         work_num = request.POST.get('work_num')
         cell_phone = request.POST.get('cell_phone')
@@ -43,7 +45,6 @@ def binding(request):
         else:
             return HttpResponse('Fail')
     user_id = request.session.get('user_id', '')
-    print('user_id', user_id)
     if WXUser.objects.filter(wx_openid=user_id).exists():
         return render_to_response('binding.html', {'banded': 'banded'})
     else:
@@ -56,18 +57,23 @@ def leave(request):
     :param request:
     :return:
     """
-    if request.GET.get('code'):
+    if request.GET.get('code') or request.session.get('user_id', ''):
         user_id = request.session.get('user_id', '')
-        request.session['user_id'] = user_id
         if not user_id:
             user_id = get_user_id(request.GET.get('code'))
+        request.session['user_id'] = user_id
         if not WXUser.objects.filter(wx_openid=user_id).exists():
             return HttpResponseRedirect('/binding')
         else:
             current_user = WXUser.objects.get(wx_openid=user_id)
-        return render_to_response('leave.html', {'current_user': current_user}, context_instance=RequestContext(request))
-    else:
-        return HttpResponseRedirect(get_code_url('http://wachat.sttri.com.cn/leave'))
+        return render_to_response('leave.html', {'current_user': current_user},
+                                  context_instance=RequestContext(request))
+    return HttpResponseRedirect(get_code_url('http://wachat.sttri.com.cn/leave'))
+
+    # request.session['open_id'] = '8888'  # todo delete later
+    # open_id = request.session.get('open_id')
+    # current_user = WXUser.objects.get(wx_openid=open_id)
+    # return render_to_response('leave.html', {'current_user': current_user}, context_instance=RequestContext(request))
 
 
 def out(request):
@@ -76,10 +82,24 @@ def out(request):
     :param request:
     :return:
     """
-    request.session['open_id'] = '8888'  # todo delete later
-    open_id = request.session.get('open_id')
-    current_user = WXUser.objects.get(wx_openid=open_id)
-    return render_to_response('out.html', {'current_user': current_user}, context_instance=RequestContext(request))
+    if request.GET.get('code') or request.session.get('user_id', ''):
+        user_id = request.session.get('user_id', '')
+        if not user_id:
+            user_id = get_user_id(request.GET.get('code'))
+        request.session['user_id'] = user_id
+        if not WXUser.objects.filter(wx_openid=user_id).exists():
+            return HttpResponseRedirect('/binding')
+        else:
+            current_user = WXUser.objects.get(wx_openid=user_id)
+        return render_to_response('out.html', {'current_user': current_user},
+                                  context_instance=RequestContext(request))
+    return HttpResponseRedirect(get_code_url('http://wachat.sttri.com.cn/out'))
+
+    #
+    # request.session['open_id'] = '8888'  # todo delete later
+    # open_id = request.session.get('open_id')
+    # current_user = WXUser.objects.get(wx_openid=open_id)
+    # return render_to_response('out.html', {'current_user': current_user}, context_instance=RequestContext(request))
 
 
 def success(request, submit_type):
@@ -104,11 +124,55 @@ def approve(request):
     :param request:
     :return:
     """
-    request.session['open_id'] = '9999'  # todo delete later
-    open_id = request.session.get('open_id')
-    current_user = WXUser.objects.get(wx_openid=open_id)
-    approve_leaves = Leave.objects.filter(next_dealer_id=current_user, status=1).order_by('-create_time')  # 审核中的请假/外出记录
-    return render_to_response('approve.html', {'approve_leaves': approve_leaves})
+
+    if request.GET.get('code') or request.session.get('user_id', ''):
+        user_id = request.session.get('user_id', '')
+        if not user_id:
+            user_id = get_user_id(request.GET.get('code'))
+        request.session['user_id'] = user_id
+        if not WXUser.objects.filter(wx_openid=user_id).exists():
+            return HttpResponseRedirect('/binding')
+        else:
+            current_user = WXUser.objects.get(wx_openid=user_id)
+            # 审核中的请假/外出记录
+            approve_leaves = Leave.objects.filter(next_dealer_id=current_user, status=1).order_by('-create_time')
+        return render_to_response('approve.html', {'approve_leaves': approve_leaves},
+                                  context_instance=RequestContext(request))
+    return HttpResponseRedirect(get_code_url('http://wachat.sttri.com.cn/approve'))
+
+
+    # request.session['open_id'] = '9999'  # todo delete later
+    # open_id = request.session.get('open_id')
+    # current_user = WXUser.objects.get(wx_openid=open_id)
+    # approve_leaves = Leave.objects.filter(next_dealer_id=current_user, status=1).order_by('-create_time')  # 审核中的请假/外出记录
+    # return render_to_response('approve.html', {'approve_leaves': approve_leaves})
+
+def approved_record(request):
+    """
+    审批记录页面
+    :param request:
+    :return:
+    """
+    if request.GET.get('code') or request.session.get('user_id', ''):
+        user_id = request.session.get('user_id', '')
+        if not user_id:
+            user_id = get_user_id(request.GET.get('code'))
+        request.session['user_id'] = user_id
+        if not WXUser.objects.filter(wx_openid=user_id).exists():
+            return HttpResponseRedirect('/binding')
+        else:
+            current_user = WXUser.objects.get(wx_openid=user_id)
+            # 审批过的中的请假/外出记录
+            approved_leaves = Leave.objects.filter(all_dealers__contains=user_id).order_by('-create_time')  # 审核中的请假/外出记录
+        return render_to_response('approve_record.html', {'approved_leaves': approved_leaves},
+                                  context_instance=RequestContext(request))
+    return HttpResponseRedirect(get_code_url('http://wachat.sttri.com.cn/approve'))
+
+    # request.session['open_id'] = '8888'  # todo delete later
+    # open_id = request.session.get('open_id')
+    # current_user = WXUser.objects.get(wx_openid=open_id)
+    # approved_leaves = Leave.objects.filter(all_dealers__contains=open_id).order_by('-create_time')  # 审核中的请假/外出记录
+    # return render_to_response('approve_record.html', {'approved_leaves': approved_leaves})
 
 
 def my_leaves(request):
@@ -117,18 +181,34 @@ def my_leaves(request):
     :param request:
     :return:
     """
-    request.session['open_id'] = '8888'  # todo delete later
-    open_id = request.session.get('open_id')
-    leaves = Leave.objects.filter(applicant_openid=open_id).order_by('-create_time')
-    return render_to_response('my_leaves.html', {'leaves': leaves})
+    if request.GET.get('code') or request.session.get('user_id', ''):
+        user_id = request.session.get('user_id', '')
+        if not user_id:
+            user_id = get_user_id(request.GET.get('code'))
+        request.session['user_id'] = user_id
+        if not WXUser.objects.filter(wx_openid=user_id).exists():
+            return HttpResponseRedirect('/binding')
+        else:
+                leaves = Leave.objects.filter(applicant_openid=user_id).order_by('-create_time')
+        return render_to_response('my_leaves.html', {'leaves': leaves},
+                                  context_instance=RequestContext(request))
+    return HttpResponseRedirect(get_code_url('http://wachat.sttri.com.cn/my_leaves'))
+
+    #
+    # request.session['open_id'] = '8888'  # todo delete later
+    # open_id = request.session.get('open_id')
+    # leaves = Leave.objects.filter(applicant_openid=open_id).order_by('-create_time')
+    # return render_to_response('my_leaves.html', {'leaves': leaves})
 
 urlpatterns = [
+    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^grappelli/', include('grappelli.urls')),  # grappelli URLS
-    url(r'^admin/', admin.site.urls),
+    url(r'^admin/', include(admin.site.urls)),
     url(r'^binding/$', binding, name='index'),
     url(r'^leave/$', leave, name='leave'),
     url(r'^out/$', out, name='out'),
     url(r'^approve/$', approve, name='approve_page'),
+    url(r'^approved_record/$', approved_record, name='approved_record'),
     url(r'^my_leaves/$', my_leaves, name='my_leaves'),
     url(r'^success/(?P<submit_type>.*)/', success, name='success'),
     url(r'^leave/', include('leave.urls')),
