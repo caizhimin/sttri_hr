@@ -228,6 +228,11 @@
                         $('#leave_apply_btn').attr('disabled', false)
                         return
                     }
+                    if(data['leave_type'] == 'Exists leave not completed'){
+                         Materialize.toast('申请失败, 您有尚未注销的假期', 4000)
+                        $('#leave_apply_btn').attr('disabled', false)
+                        return
+                    }
                     if (data['leave_type'] == 'sick_leave')  //返回ID 则为病假，产假 跳转到上传证明
                     {
                         window.location = '/leave/sick_leave_img_upload_page/' + data['new_leave_id']

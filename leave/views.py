@@ -206,6 +206,9 @@ def leave_apply(request):
     # 申请开始时间或者结束时间在最后条记录中,不能再申请
     if not ((end_datetime < last_leave_start_time) or (start_datetime > last_leave_end_time)):
         return HttpResponse(json.dumps({'leave_type': 'Not Allowed'}))
+    # 存在未销假的假期
+    if Leave.objects.filter(applicant_openid=user_id, status=3, group=1).exists():
+        return HttpResponse(json.dumps({'leave_type': 'Exists leave not completed'}))
 
     if group == '1' and leave_type in ('2', '3'):  # 病假or产假 , 返回新增leave_id用于上传图片页面
         if leave_days >= 5:  # 病假超5天或者产假通知李赫
