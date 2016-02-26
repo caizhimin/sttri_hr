@@ -185,7 +185,22 @@
                                         href="#cancel_modal">
                                     取&nbsp;&nbsp;消
                                 </button>
+                                {% elif i.status == 3 %}
+                                {% if i.is_past_due %}
+                                    <button id="out_done_btn_{{ i.pk }}" class="out_done_btn btn waves-effect waves-light deep-orange lighten-1"
+                                            href="#out_done_modal">
+                                        提前返回
+                                    </button>
+                                    {% else %}
+                                        <button id="cancel_btn_{{ i.pk }}"
+                                            class="cancel_btn btn waves-effect waves-light blue-grey lighten-2"
+                                            href="#cancel_modal">
+                                        取&nbsp;&nbsp;消
+                                    </button>
+                                    {% endif %}
+
                             {% endif %}
+
                         {% endif %}
 
                         </p>
@@ -224,6 +239,25 @@
         </div>
         </div>
 
+
+        <!-- out_done modal -->
+        <div id="out_done_modal" class="modal">
+        <div class="modal-content">
+            <div class="row">
+                <div class="input-field col s12">
+                    <input id="out_actual_level_days" type="number" class="validate">
+                    <label for="out_actual_level_days">实际外出天数</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span id="out_done_leave_id" hidden="hidden"></span>
+                <a href="#!" id="out_done_submit"
+                   class="modal-action modal-close waves-effect red lighten-1 waves-effect btn" style="color:#ffffff;">确认</a>
+            </div>
+        </div>
+        </div>
+
+
     {% else %}
     {% endif %}
 
@@ -255,6 +289,19 @@
                         }
                     }
             );
+
+            $('.out_done_btn').leanModal({
+                        dismissible: true, // Modal can be dismissed by clicking outside of the modal
+                        opacity: .5, // Opacity of modal background
+                        in_duration: 500, // Transition in duration
+                        out_duration: 500, // Transition out duration
+                        complete: function () {
+                            $('#out_done_leave_id').text('')
+                            $('#out_actual_level_days').val('').blur()
+                        }
+                    }
+            );
+
         });
         $('.cancel_btn').click(function () {
             $('#cancel_leave_id').text($(this).siblings('.leave_id').text())
@@ -296,12 +343,44 @@
                     $('#done_btn_' + leave_id).remove()
                     $('#title_' + leave_id).click()
                 }
-
             })
             }
 
             else{
                 Materialize.toast('请填写正确的实际用假天数', 4000)
+            }
+
+        })
+
+
+    $('.out_done_btn').click(function () {
+            $('#out_done_leave_id').text($(this).siblings('.leave_id').text())
+
+        })
+
+        $('#out_done_submit').click(function () {
+            var leave_id = $(this).siblings('#out_done_leave_id').text()
+            var out_actual_level_days = $('#out_actual_level_days').val()
+            console.log(leave_id)
+            if(out_actual_level_days>0){
+               $.post('/leave/out_done', {
+                'leave_id': leave_id, 'out_actual_level_days': out_actual_level_days
+            }, function (data) {
+                if(data == 'Fail'){
+                    Materialize.toast('提前返回失败, 提前返回天数不得大于申请天数', 4000)
+                }
+                else{
+                    Materialize.toast('提前返回成功', 4000)
+                    $('#title_' + leave_id).removeClass('deep-orange lighten-1').addClass('green lighten-1')
+                    $('#done_btn_' + leave_id).remove()
+                    $('#title_' + leave_id).click()
+                }
+
+            })
+            }
+
+            else{
+                Materialize.toast('请填写正确的提前返回天数', 4000)
             }
 
         })

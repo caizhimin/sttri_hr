@@ -193,9 +193,19 @@
 
             var option = {
                 data: {'leave_days_count': $('#leave_days').text(), 'group': group},
+
                 async: false,
-                success: function () {
+                success: function (data) {
+                    if (data == 'Not Allowed'){
+                        Materialize.toast('申请失败, 您在此时间段内已有请假或外出', 4000)
+                        $('#leave_apply_btn').attr('disabled', false)
+                        return
+                    }
+
                     window.location = '{% url 'success' 'out' %}'
+                }
+                error: function(){
+                    $('#out_apply_btn').attr('disabled', false)
                 }
             }
             //ajaxForm插件的提交方式

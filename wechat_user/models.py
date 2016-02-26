@@ -98,7 +98,7 @@ class Leave(models.Model):
 
     @property
     def is_past_due(self):
-        if datetime.utcnow() > self.leave_start_datetime:
+        if datetime.now() > self.leave_start_datetime:
             return True
         return False
 

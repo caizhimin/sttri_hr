@@ -180,17 +180,32 @@ def leave_apply(request):
     end_time = request.POST.get('end_time', '')
     leave_days = float(request.POST.get('leave_days_count', 0))
     user_id = request.session.get('user_id')
+    # user_id = '8888'  # todo  delete
     wxuser = WXUser.objects.get(wx_openid=user_id)
     create_time = datetime.datetime.now()
     leave_start_datetime = start_date + ' ' + start_time
     leave_end_datetime = end_date + ' ' + end_time
-    department_timekeeper = WXUser.objects.get(department=wxuser.department, is_timekeeper=1)
+    try:
+        department_timekeeper = WXUser.objects.get(department=wxuser.department, is_timekeeper=1)
+    except Exception, error:
+        print error
+        department_timekeeper = WXUser.objects.get(id=999)
     # send Email
     direct_director = WXUser.objects.get(pk=wxuser.direct_director.pk)
     direct_director_email = direct_director.email
     direct_director_name = direct_director.name
     # send_email('jack_czm@vip.sina.com', direct_director_email, direct_director_name, wxuser.name, leave_start_datetime,
     #            leave_end_datetime, leave_days, '请假', 'apply')
+
+    last_leave = Leave.objects.filter(applicant_openid=user_id).exclude(status=0).last()  # 最后的leave（未取消）
+    last_leave_start_time = last_leave.leave_start_datetime
+    last_leave_end_time = last_leave.leave_end_datetime
+    start_datetime = datetime.datetime.strptime(start_date + ' ' + start_time, '%Y-%m-%d %H:%M')
+    end_datetime = datetime.datetime.strptime(end_date + ' ' + end_time, '%Y-%m-%d %H:%M')
+
+    # 申请开始时间或者结束时间在最后条记录中,不能再申请
+    if not ((end_datetime < last_leave_start_time) or (start_datetime > last_leave_end_time)):
+        return HttpResponse(json.dumps({'leave_type': 'Not Allowed'}))
 
     if group == '1' and leave_type in ('2', '3'):  # 病假or产假 , 返回新增leave_id用于上传图片页面
         if leave_days >= 5:  # 病假超5天或者产假通知李赫
@@ -202,7 +217,8 @@ def leave_apply(request):
                                             leave_end_datetime=leave_end_datetime, create_time=create_time,
                                             leave_days=leave_days, leave_reason=message, remark='',
                                             applicant_name=wxuser.name, applicant_openid=wxuser.wx_openid,
-                                            status=1, next_dealer=department_timekeeper,
+                                            status=1,
+                                            next_dealer=department_timekeeper,
                                             refuse_reason='').id
         # 病产假通知部门考勤员准备查看申请资料
         send_msg(receive_open_id=direct_director.wx_openid, applicant_name=wxuser.name,
@@ -259,6 +275,17 @@ def out_apply(request):
     create_time = datetime.datetime.now()
     leave_start_datetime = start_date + ' ' + start_time
     leave_end_datetime = end_date + ' ' + end_time
+
+    last_leave = Leave.objects.filter(applicant_openid=user_id).exclude(status=0).last()  # 最后的leave（未取消）
+    last_leave_start_time = last_leave.leave_start_datetime
+    last_leave_end_time = last_leave.leave_end_datetime
+    start_datetime = datetime.datetime.strptime(start_date + ' ' + start_time, '%Y-%m-%d %H:%M')
+    end_datetime = datetime.datetime.strptime(end_date + ' ' + end_time, '%Y-%m-%d %H:%M')
+
+    # 申请开始时间或者结束时间在最后条记录中,不能再申请
+    if not ((end_datetime < last_leave_start_time) or (start_datetime > last_leave_end_time)):
+        return HttpResponse('Not Allowed')
+
     Leave.objects.create(group=int(group), type=leave_type, leave_start_datetime=leave_start_datetime,
                          leave_end_datetime=leave_end_datetime, create_time=create_time, leave_days=leave_days,
                          leave_reason=message, remark='', applicant_name=wxuser.name, applicant_openid=wxuser.wx_openid,
@@ -451,6 +478,25 @@ def done(request):
         redundant_leave_days = apply_leave_days - actual_level_days
         applicant.legal_vacation_days += redundant_leave_days
         applicant.save()
+        leave.status = 4
+    leave.save()
+    return HttpResponse('Success')
+
+
+def out_done(request):
+    """
+    外出提前返回
+    :param request:
+    :return:
+    """
+    leave_id = request.POST.get('leave_id', '')
+    out_actual_level_days = float(request.POST.get('out_actual_level_days'))
+    leave = Leave.objects.get(pk=leave_id)
+    apply_leave_days = float(leave.leave_days)
+    if out_actual_level_days > apply_leave_days:  # 提前返回天数大于申请天数
+        return HttpResponse('Fail')
+    else:
+        leave.leave_days -= out_actual_level_days
         leave.status = 4
     leave.save()
     return HttpResponse('Success')
