@@ -289,6 +289,10 @@ def out_apply(request):
     if not ((end_datetime < last_leave_start_time) or (start_datetime > last_leave_end_time)):
         return HttpResponse('Not Allowed')
 
+    # 存在未销假的假期
+    if Leave.objects.filter(applicant_openid=user_id, status=3, group=1).exists():
+        return HttpResponse(json.dumps({'leave_type': 'Exists leave not completed'}))
+
     Leave.objects.create(group=int(group), type=leave_type, leave_start_datetime=leave_start_datetime,
                          leave_end_datetime=leave_end_datetime, create_time=create_time, leave_days=leave_days,
                          leave_reason=message, remark='', applicant_name=wxuser.name, applicant_openid=wxuser.wx_openid,
