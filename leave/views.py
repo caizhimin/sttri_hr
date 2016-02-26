@@ -481,7 +481,10 @@ def done(request):
         redundant_leave_days = apply_leave_days - actual_level_days
         applicant.legal_vacation_days += redundant_leave_days
         applicant.save()
-        leave.status = 4
+        if actual_level_days != 0:
+            leave.status = 4
+        else:
+            leave.status = 0
     leave.save()
     return HttpResponse('Success')
 

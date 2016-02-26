@@ -330,7 +330,7 @@
             var leave_id = $(this).siblings('#done_leave_id').text()
             var actual_level_days = $('#actual_level_days').val()
             console.log(leave_id)
-            if(actual_level_days>0){
+            if(actual_level_days >= 0){
                $.post('/leave/done', {
                 'leave_id': leave_id, 'actual_level_days': actual_level_days
             }, function (data) {
