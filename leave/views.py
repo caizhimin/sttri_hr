@@ -1,6 +1,5 @@
 # coding: utf8
 from __future__ import unicode_literals
-import requests
 import datetime
 import json
 from django.shortcuts import render, render_to_response
@@ -8,7 +7,6 @@ from django.http import HttpResponse
 from django.template import RequestContext
 from wechat_user.models import WXUser, Leave
 from collections import Counter
-from util.logger import log
 import smtplib
 from email.mime.text import MIMEText
 from email.header import Header
@@ -18,37 +16,11 @@ from django.views.decorators.csrf import csrf_exempt
 from PIL import Image
 import io
 from util.wechat_oauth import send_msg
+from util.date import get_work_days
 # Create your views here.
 
 
-# HOLIDAY_API_KEY = '24e16647f7490e170d68de37bc7254fc'   # baidu
-HOLIDAY_API_KEY = '50e929681e924ddd6f53e5603780b23d'   # sina
 
-# headers = {'apikey': HOLIDAY_API_KEY}  # baidu
-headers = {'apix-key': HOLIDAY_API_KEY}  # sina
-
-
-# 0 工作日
-# 1 休息日
-# 2 节假日
-
-
-def get_work_days(days_list):
-    """
-    :param days_list:  ['20160101', '20160202']
-    :return: if single days_list, return 0 or 1 or 2 ,
-             if multiple days_list, return {"20130101":2,"20130103":2,,"20130201":"0"}
-    """
-    # url = 'http://apis.baidu.com/xiaogg/holiday/holiday?d='  # baidu
-    url = 'http://a.apix.cn/tbip/sinaapp/?d='
-    prefix = ','.join(days_list)
-    print '%s%s' % (url, prefix)
-    try:
-        response = requests.get('%s%s' % (url, prefix), headers=headers)
-        return json.loads(response.text)
-    except Exception, e:
-        log.error(e)
-        return None
 
 
 def send_email(sender_email, receiver_email, receiver_name, applicant_name, leave_start_datetime, leave_end_datetime,
@@ -118,6 +90,7 @@ def calculate_leave_day(request):
     end_date = request.POST.get('end_date', '').replace('-', '')
     start_time = request.POST.get('start_time', '')
     end_time = request.POST.get('end_time', '')
+    print (start_time, end_time)
     if start_date and end_date and start_time and end_time:
         start_datetime = datetime.datetime.strptime(start_date, "%Y%m%d").date()
         end_datetime = datetime.datetime.strptime(end_date, "%Y%m%d").date()
@@ -577,7 +550,6 @@ def img_upload(request):
     :return:
     """
     img = request.FILES.get('img')
-    print(img)
     i_img = Image.open(img)
     print(i_img)
     i_img.thumbnail((500, 500), Image.ANTIALIAS)
