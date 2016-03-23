@@ -117,13 +117,15 @@ def calculate_leave_day(request):
             else:  # 开始结束 全都是周末或者法定节假日
                 leave_days_count = 0
         else:  # single day
-            if day_status == 1 or 2:  # single day (weekend or vacation)
+            if day_status in (1, 2):  # single day (weekend or vacation)
                 leave_days_count = 0
             else:  # working day
                 if (start_time == '08:30' and end_time == '13:30') or (start_time == '11:00' and end_time == '17:00'):
                     leave_days_count = 0.5
                 elif start_time == '11:00' and end_time == '13:30':
                     leave_days_count = 0
+                elif start_time == '08:30' and end_time == '17:00':
+                    leave_days_count = 1
                 else:
                     leave_days_count = 0
     else:
