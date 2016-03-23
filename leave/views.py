@@ -90,7 +90,6 @@ def calculate_leave_day(request):
     end_date = request.POST.get('end_date', '').replace('-', '')
     start_time = request.POST.get('start_time', '')
     end_time = request.POST.get('end_time', '')
-    print (start_time, end_time)
     if start_date and end_date and start_time and end_time:
         start_datetime = datetime.datetime.strptime(start_date, "%Y%m%d").date()
         end_datetime = datetime.datetime.strptime(end_date, "%Y%m%d").date()
@@ -173,17 +172,18 @@ def leave_apply(request):
     #            leave_end_datetime, leave_days, '请假', 'apply')
 
     last_leave = Leave.objects.filter(applicant_openid=user_id).exclude(status=0).last()  # 最后的leave（未取消）
-    last_leave_start_time = last_leave.leave_start_datetime
-    last_leave_end_time = last_leave.leave_end_datetime
-    start_datetime = datetime.datetime.strptime(start_date + ' ' + start_time, '%Y-%m-%d %H:%M')
-    end_datetime = datetime.datetime.strptime(end_date + ' ' + end_time, '%Y-%m-%d %H:%M')
+    if last_leave:
+        last_leave_start_time = last_leave.leave_start_datetime
+        last_leave_end_time = last_leave.leave_end_datetime
+        start_datetime = datetime.datetime.strptime(start_date + ' ' + start_time, '%Y-%m-%d %H:%M')
+        end_datetime = datetime.datetime.strptime(end_date + ' ' + end_time, '%Y-%m-%d %H:%M')
 
-    # 申请开始时间或者结束时间在最后条记录中,不能再申请
-    if not ((end_datetime < last_leave_start_time) or (start_datetime > last_leave_end_time)):
-        return HttpResponse(json.dumps({'leave_type': 'Not Allowed'}))
-    # 存在未销假的假期
-    if Leave.objects.filter(applicant_openid=user_id, status=3, group=1).exists():
-        return HttpResponse(json.dumps({'leave_type': 'Exists leave not completed'}))
+        # 申请开始时间或者结束时间在最后条记录中,不能再申请
+        if not ((end_datetime < last_leave_start_time) or (start_datetime > last_leave_end_time)):
+            return HttpResponse(json.dumps({'leave_type': 'Not Allowed'}))
+        # 存在未销假的假期
+        if Leave.objects.filter(applicant_openid=user_id, status=3, group=1).exists():
+            return HttpResponse(json.dumps({'leave_type': 'Exists leave not completed'}))
 
     if group == '1' and leave_type in ('2', '3'):  # 病假or产假 , 返回新增leave_id用于上传图片页面
         if leave_days >= 5:  # 病假超5天或者产假通知李赫
@@ -255,14 +255,15 @@ def out_apply(request):
     leave_end_datetime = end_date + ' ' + end_time
 
     last_leave = Leave.objects.filter(applicant_openid=user_id).exclude(status=0).last()  # 最后的leave（未取消）
-    last_leave_start_time = last_leave.leave_start_datetime
-    last_leave_end_time = last_leave.leave_end_datetime
-    start_datetime = datetime.datetime.strptime(start_date + ' ' + start_time, '%Y-%m-%d %H:%M')
-    end_datetime = datetime.datetime.strptime(end_date + ' ' + end_time, '%Y-%m-%d %H:%M')
+    if last_leave:
+        last_leave_start_time = last_leave.leave_start_datetime
+        last_leave_end_time = last_leave.leave_end_datetime
+        start_datetime = datetime.datetime.strptime(start_date + ' ' + start_time, '%Y-%m-%d %H:%M')
+        end_datetime = datetime.datetime.strptime(end_date + ' ' + end_time, '%Y-%m-%d %H:%M')
 
-    # 申请开始时间或者结束时间在最后条记录中,不能再申请
-    if not ((end_datetime < last_leave_start_time) or (start_datetime > last_leave_end_time)):
-        return HttpResponse('Not Allowed')
+        # 申请开始时间或者结束时间在最后条记录中,不能再申请
+        if not ((end_datetime < last_leave_start_time) or (start_datetime > last_leave_end_time)):
+            return HttpResponse({'leave_type': 'Not Allowed'})
 
     # 存在未销假的假期
     if Leave.objects.filter(applicant_openid=user_id, status=3, group=1).exists():
@@ -282,7 +283,7 @@ def out_apply(request):
     send_msg(receive_open_id=direct_director.wx_openid, applicant_name=wxuser.name,
              start_datetime=str(leave_start_datetime),
              end_datetime=str(leave_end_datetime), _type='外出', days=leave_days, msg_type='apply')
-    return HttpResponse('Success')
+    return HttpResponse(json.dumps({'leave_type': 'Success'}))
 
 
 def approve(request):

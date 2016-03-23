@@ -235,13 +235,13 @@
                     }
                     if (data['leave_type'] == 'sick_leave')  //返回ID 则为病假，产假 跳转到上传证明
                     {
-                        window.location = '/leave/sick_leave_img_upload_page/' + data['new_leave_id']
+                        window.location.href = '/leave/sick_leave_img_upload_page/' + data['new_leave_id']
                     }
                     else if (data['leave_type'] == 'pregnant_leave') {
-                        window.location = '/leave/pregnant_leave_img_upload_page/' + data['new_leave_id']
+                        window.location.href = '/leave/pregnant_leave_img_upload_page/' + data['new_leave_id']
                     }
                     else {
-                        window.location = '{% url 'success' 'leave' %}'
+                        window.location.href = '{% url 'success' 'leave' %}'
 
                     }
                 },

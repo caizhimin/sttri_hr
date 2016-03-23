@@ -141,6 +141,7 @@
             if (!level_type) {
                 Materialize.toast('请选择外出类型', 4000)
                 $("select[name='leave_type']").click()
+                $(this).attr('disabled', false)
                 return
 
             }
@@ -193,16 +194,22 @@
 
             var option = {
                 data: {'leave_days_count': $('#leave_days').text(), 'group': group},
-
+                dataType: 'json',
                 async: false,
                 success: function (data) {
-                    if (data == 'Not Allowed'){
+                    if (data['leave_type'] == 'Not Allowed'){
                         Materialize.toast('申请失败, 您在此时间段内已有请假或外出', 4000)
                         $('#out_apply_btn').attr('disabled', false)
                         return
                     }
-
-                    window.location = '{% url 'success' 'out' %}'
+                    else if (data['leave_type']== 'Exists leave not completed'){
+                        Materialize.toast('申请失败, 您有尚未注销的假期', 4000)
+                        $('#out_apply_btn').attr('disabled', false)
+                        return
+                    }
+                    else{
+                        window.location.href = '{% url 'success' 'out' %}'
+                    }
                 },
                 error: function(){
                     $('#out_apply_btn').attr('disabled', false)
