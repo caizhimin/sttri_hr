@@ -17,12 +17,9 @@ from PIL import Image
 import io
 from util.wechat_oauth import send_msg
 from util.date import get_work_days
+
+
 # Create your views here.
-
-
-
-
-
 def send_email(sender_email, receiver_email, receiver_name, applicant_name, leave_start_datetime, leave_end_datetime,
                leave_days, leave_type, email_type):
     """
@@ -208,20 +205,18 @@ def leave_apply(request):
         else:
             return HttpResponse(json.dumps({'leave_type': 'pregnant_leave', 'new_leave_id': new_leave_id}))
 
-    elif leave_type in ('0', '1'):  # 事假or年假
+    elif leave_type in ('0', '1', '8'):  # 事假or年假
         Leave.objects.create(group=int(group), type=leave_type, leave_start_datetime=leave_start_datetime,
                              leave_end_datetime=leave_end_datetime, create_time=create_time, leave_days=leave_days,
                              leave_reason=message, remark='', applicant_name=wxuser.name,
                              applicant_openid=wxuser.wx_openid,
                              status=1, next_dealer=wxuser.direct_director, refuse_reason='')
         # minus vacation days
-        if leave_type == '0':  # 申请年假
-            if wxuser.legal_vacation_days >= leave_days:  # 优先扣除法定年假，再扣企业年假
-                wxuser.legal_vacation_days -= leave_days
-            else:
-                wxuser.company_vacation_days -= (leave_days - wxuser.legal_vacation_days)
-                wxuser.legal_vacation_days = 0
-            wxuser.save()
+        if leave_type == '0':  # 申请法定年假
+            wxuser.legal_vacation_days -= leave_days
+        elif leave_type == '8':  # 申请企业年假
+            wxuser.company_vacation_days -= leave_days
+        wxuser.save()
         send_msg(receive_open_id=direct_director.wx_openid, applicant_name=wxuser.name,
                  start_datetime=str(leave_start_datetime),
                  end_datetime=str(leave_end_datetime), _type='请假', days=leave_days, msg_type='apply')
@@ -263,7 +258,7 @@ def out_apply(request):
 
         # 申请开始时间或者结束时间在最后条记录中,不能再申请
         if not ((end_datetime < last_leave_start_time) or (start_datetime > last_leave_end_time)):
-            return HttpResponse({'leave_type': 'Not Allowed'})
+            return HttpResponse(json.dumps({'leave_type': 'Not Allowed'}))
 
     # 存在未销假的假期
     if Leave.objects.filter(applicant_openid=user_id, status=3, group=1).exists():
