@@ -23,10 +23,12 @@ def get_work_days(days_list):
              if multiple days_list, return {"20130101":2,"20130103":2,,"20130201":"0"}
     """
     # url = 'http://apis.baidu.com/xiaogg/holiday/holiday?d='  # baidu
-    url = 'http://a.apix.cn/tbip/sinaapp/?d='
+    # url = 'http://a.apix.cn/tbip/sinaapp/?d='  # damn it!
+    url = 'http://www.easybots.cn/api/holiday.php?d='
+
     prefix = ','.join(days_list)
     try:
-        response = requests.get('%s%s' % (url, prefix), headers=headers)
+        response = requests.get('%s%s' % (url, prefix))
         return json.loads(response.text)
     except Exception, e:
         log.error(e)
