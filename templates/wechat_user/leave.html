@@ -17,9 +17,9 @@
                         <option value="0" disabled="disabled">法定年假(剩余{{ current_user.legal_vacation_days }}天)</option>
                     {% endif %}
                     {% if current_user.company_vacation_days > 0 and current_user.legal_vacation_days <= 0 %}
-                        <option value="0">企业年假(剩余{{ current_user.company_vacation_days }}天)</option>
+                        <option value="8">企业年假(剩余{{ current_user.company_vacation_days }}天)</option>
                     {% else %}
-                        <option value="0" disabled="disabled">企业年假(剩余{{ current_user.company_vacation_days }}天)</option>
+                        <option value="8" disabled="disabled">企业年假(剩余{{ current_user.company_vacation_days }}天)</option>
                     {% endif %}
                     {% if current_user.legal_vacation_days <= 0 and current_user.company_vacation_days <= 0 %}
                         <option value="1">事假</option>
