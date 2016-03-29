@@ -76,7 +76,7 @@
                             天
                     <span style="color: red">
                         {% if i.type == 0 %}
-                            年假
+                           法定年假
                         {% elif i.type == 1 %}
                             事假
                         {% elif i.type == 2 %}
@@ -91,6 +91,8 @@
                             出差
                         {% elif i.type == 7 %}
                             其他
+                        {% elif i.type == 8 %}
+                            企业年假
                         {% endif %}
                     </span>
 
