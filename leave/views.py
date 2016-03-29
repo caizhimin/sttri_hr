@@ -454,7 +454,10 @@ def done(request):
         applicant_openid = leave.applicant_openid
         applicant = WXUser.objects.get(wx_openid=applicant_openid)
         redundant_leave_days = apply_leave_days - actual_level_days
-        applicant.legal_vacation_days += redundant_leave_days
+        if leave.type == 0:
+            applicant.legal_vacation_days += redundant_leave_days
+        elif leave.type == 8:
+            applicant.company_vacation_days += redundant_leave_days
         applicant.save()
         if actual_level_days != 0:
             leave.status = 4
