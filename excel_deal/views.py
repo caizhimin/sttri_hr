@@ -7,9 +7,6 @@ import xlrd
 import json
 import calendar
 import datetime
-from django.core.wsgi import get_wsgi_application
-os.environ['DJANGO_SETTINGS_MODULE'] = 'sttri_hr.settings'
-application = get_wsgi_application()
 from xlutils.copy import copy as excel_copy
 from django.shortcuts import render_to_response
 from django.http.response import HttpResponse
