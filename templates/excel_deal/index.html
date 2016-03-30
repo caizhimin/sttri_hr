@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="input-field col s12" style="width: 30%;margin: 5% 0 5% 10%;font-size: 1rem;float: left">
+        <select id="year">
+            <option value="" disabled selected>请选择年份</option>
+            {% for i in years %}
+                <option value="{{ i }}">{{ i }}</option>
+            {% endfor %}
+        </select>
+
+
+    </div>
+
+    <div class="input-field col s12" style="width: 30%;margin: 5% 0 5% 13%;font-size: 1rem;float: left">
+        <select id="month">
+            <option value="" disabled selected>请选择月份</option>
+            {% for i in months %}
+                {% if i < 10 %}
+                    <option value="0{{ i }}">0{{ i }}</option>
+
+                {% else %}
+                    <option value="{{ i }}">{{ i }}</option>
+
+                {% endif %}
+            {% endfor %}
+        </select>
+
+    </div>
+
+
+
+    <form class="upload_simple_record_form" id="" method="post" action="{% url 'upload_simple_record' %}"
+          enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="input-field col s12" style="width: 73%;margin: 5% 0 5% 10%;font-size: 1rem;clear: both">
+            <div class="file-field input-field">
+                <div class="btn">
+                    <span>简单分析原始记录</span>
+                    <input name="simple_record" type="file" accept="application/vnd.ms-excel"
+                           onchange="upload_simple_record(this)">
+
+                </div>
+                <div class="file-path-wrapper">
+                    <input class="file-path" type="text">
+                </div>
+
+            </div>
+            {#                <img id="img_1" class="materialboxed" data-caption="简单分析原始记录" width="100%" src="" style="display: none">#}
+
+
+        </div>
+    </form>
+    <a class="waves-effect waves-light btn" style="margin: 0 0 5% 10%;display: none;color: white" id="download_simple_record">下载原始记录总表</a>
+{% endblock %}
+
+{% block extra_script %}
+    <script>
+        $(document).ready(function () {
+            $('select').material_select();
+        });
+
+        {#    var year = $#}
+        {#    var month =#}
+        function upload_simple_record(obj) {
+            var year = $('#year').val()
+            var month = $('#month').val()
+            if (year==null){
+                Materialize.toast('请选择正确的年份', 4000)
+                $("input[name='simple_record']").val('')
+
+                return
+            }
+            if(month==null){
+                Materialize.toast('请选择正确的月份', 4000)
+                $("input[name='simple_record']").val('')
+                return
+            }
+            var form = $(obj).closest('.upload_simple_record_form')
+            var option = {
+                data: {'year': year, 'month': month},
+                success: function (url) {
+                    console.log(url)
+                    $('#download_simple_record').attr('href', url)
+                    $('#download_simple_record').fadeIn()
+{#                    for (var i = 0; i < url.length; i++) {#}
+{#                        window.open(url[i])#}
+{#                    }#}
+
+                }
+            }
+            form.ajaxSubmit(option)
+
+        }
+    </script>
+
+{% endblock %}
