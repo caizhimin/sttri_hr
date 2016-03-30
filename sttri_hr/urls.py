@@ -212,6 +212,7 @@ urlpatterns = [
     url(r'^my_leaves/$', my_leaves, name='my_leaves'),
     url(r'^success/(?P<submit_type>.*)/', success, name='success'),
     url(r'^leave/', include('leave.urls')),
+    url(r'^excel_deal/', include('excel_deal.urls'))
 
 ]
 
