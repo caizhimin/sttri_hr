@@ -13,6 +13,7 @@ from django.http.response import HttpResponse
 from util.qiniu_upload import my_qiniu
 from util.date import get_work_days
 from wechat_user.models import Leave
+from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 
 alignment = xlwt.Alignment()  # Create Alignment
@@ -47,7 +48,7 @@ def index(request):
     months = xrange(1, 13)
     return render_to_response('index.html', {'years': years, 'months': months})
 
-
+@csrf_exempt
 def upload_simple_record(request):
     year = request.POST.get('year')
     month = request.POST.get('month')
@@ -818,7 +819,7 @@ def write_duty_summary_data():
 # split_original_data()
 
 # split_duty_record_data()
-write_duty_summary_data()
+# write_duty_summary_data()
 # 0 工作日
 # 1 休息日(公休假日)
 # 2 节假日(法定假日)
