@@ -9,7 +9,7 @@ qiniu_resource_url = 'http://7xj4kz.com1.z0.glb.clouddn.com'
 q = qiniu.Auth(qiniu_access_key, qiniu_secret_key)
 
 
-class ImageUpload(object):
+class Upload(object):
 
     def image_upload(self, img_file, image_name=None):
         if not image_name:
@@ -25,5 +25,13 @@ class ImageUpload(object):
         token = q.upload_token(qiniu_bucket_name, image_name)
         qiniu.put_file(token, image_name, img_path, mime_type=mime_type, check_crc=True)
 
-my_qiniu = ImageUpload()
+    def excel_upload(self, excel_file, excel_name=None):
+        if not excel_name:
+            excel_name = str(uuid.uuid1())
+        mime_type = 'application/ms-excel'
+        token = q.upload_token(qiniu_bucket_name, excel_name)
+        qiniu.put_data(token, excel_name, excel_file, mime_type=mime_type, check_crc=True)
+        return '%s/%s' % (qiniu_resource_url, excel_name)
+
+my_qiniu = Upload()
 
