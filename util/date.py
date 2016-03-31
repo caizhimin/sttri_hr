@@ -29,7 +29,10 @@ def get_work_days(days_list):
     prefix = ','.join(days_list)
     try:
         response = requests.get('%s%s' % (url, prefix))
-        return json.loads(response.text)
+        if len(days_list) == 1:
+            return json.loads(response.text)[days_list[0]]
+        else:
+            return json.loads(response.text)
     except Exception, e:
         log.error(e)
         return None
