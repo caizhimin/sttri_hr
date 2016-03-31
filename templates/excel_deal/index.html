@@ -46,18 +46,68 @@
                 </div>
 
             </div>
-            {#                <img id="img_1" class="materialboxed" data-caption="简单分析原始记录" width="100%" src="" style="display: none">#}
-
 
         </div>
     </form>
+
+        <!--loading-->
+    <div id="modal1" class="modal modal-fixed-footer" style="background: none;box-shadow: none;max-height: 1000px">
+    <div class="modal-content">
+      <div class="preloader-wrapper big active" style="width: 200px; height: 200px;margin: 10% 0 0 30%">
+      <div class="spinner-layer spinner-blue">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+
+      <div class="spinner-layer spinner-red">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+
+      <div class="spinner-layer spinner-yellow">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+
+      <div class="spinner-layer spinner-green">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+    </div>
+    </div>
+  <!--loading-->
+
     <a class="waves-effect waves-light btn" style="margin: 0 0 5% 10%;display: none;color: white" id="download_simple_record">下载原始记录总表</a>
+
+
 {% endblock %}
 
 {% block extra_script %}
     <script>
         $(document).ready(function () {
             $('select').material_select();
+            $('.modal-trigger').leanModal();
         });
 
         {#    var year = $#}
@@ -76,11 +126,13 @@
                 $("input[name='simple_record']").val('')
                 return
             }
+            $('#modal1').openModal();
             var form = $(obj).closest('.upload_simple_record_form')
             var option = {
                 data: {'year': year, 'month': month},
                 success: function (url) {
                     console.log(url)
+                    $('#modal1').closeModal();
                     $('#download_simple_record').attr('href', url)
                     $('#download_simple_record').fadeIn()
 {#                    for (var i = 0; i < url.length; i++) {#}
