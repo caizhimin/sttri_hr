@@ -98,8 +98,22 @@ class Leave(models.Model):
             return '无'
 
     @property
-    def is_past_due(self):
+    def gt_start_time_lt_end_time(self):
+        """
+        开始和结束时间之前,可以提前返回
+        :return:
+        """
         if self.leave_end_datetime > datetime.now() > self.leave_start_datetime:
+            return True
+        return False
+
+    @property
+    def lt_start_time(self):
+        """
+        开始时间之前,可以取消
+        :return:
+        """
+        if datetime.now() < self.leave_start_datetime:
             return True
         return False
 

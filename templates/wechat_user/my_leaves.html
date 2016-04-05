@@ -188,18 +188,19 @@
                                     取&nbsp;&nbsp;消
                                 </button>
                                 {% elif i.status == 3 %}
-                                {% if i.is_past_due %}
+                                {% if i.gt_start_time_lt_end_time %}
                                     <button id="out_done_btn_{{ i.pk }}" class="out_done_btn btn waves-effect waves-light deep-orange lighten-1"
                                             href="#out_done_modal">
                                         提前返回
                                     </button>
-                                    {% else %}
+                                {% endif %}
+                                {% if i.lt_start_time %}
                                         <button id="cancel_btn_{{ i.pk }}"
                                             class="cancel_btn btn waves-effect waves-light blue-grey lighten-2"
                                             href="#cancel_modal">
                                         取&nbsp;&nbsp;消
                                     </button>
-                                    {% endif %}
+                                {% endif %}
 
                             {% endif %}
 
