@@ -20,7 +20,7 @@ def get_work_days(days_list):
     """
     :param days_list:  ['20160101', '20160202']
     :return: if single days_list, return 0 or 1 or 2 ,
-             if multiple days_list, return {"20130101":2,"20130103":2,,"20130201":"0"}
+             if multiple days_list, return {"20130101":"2","20130103":"2",,"20130201":"0"}
     """
     # url = 'http://apis.baidu.com/xiaogg/holiday/holiday?d='  # baidu
     # url = 'http://a.apix.cn/tbip/sinaapp/?d='  # damn it!

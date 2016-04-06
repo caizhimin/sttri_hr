@@ -96,9 +96,9 @@ def calculate_leave_day(request):
         print(day_status)
         if isinstance(day_status, dict):  # several days
             counter = Counter(v for k, v in day_status.items())
-            print(counter.get(1), counter.get(2))
+            print(counter.get('1'), counter.get('2'))
             # 不以周末或者法定节假日开始或者结束的情况
-            leave_days_count = counter.get(0)
+            leave_days_count = counter.get('0')
             if not day_status.get(day_list[0]) in (1, 2) and not day_status.get(day_list[-1]) in (1, 2):
                 if (start_time == '08:30' and end_time == '13:30') or (start_time == '11:00' and end_time == '17:00'):
                     leave_days_count -= 0.5
