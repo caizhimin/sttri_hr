@@ -138,6 +138,8 @@
             var start_time = $("input[name='start_time']:checked").val()
             var end_time = $("input[name='end_time']:checked").val()
             var message = $("textarea[name='message']").val()
+            var out_days = parseFloat($('#leave_days').text())  //实际请假天数
+
             if (!level_type) {
                 Materialize.toast('请选择外出类型', 4000)
                 $("select[name='leave_type']").click()
@@ -187,6 +189,12 @@
 
             if (!message) {
                 Materialize.toast('请填写事由/备注', 4000)
+                $(this).attr('disabled', false)
+                return
+            }
+
+            if(out_days<=0){
+                Materialize.toast('您申请的外出天数不正确', 4000)
                 $(this).attr('disabled', false)
                 return
             }

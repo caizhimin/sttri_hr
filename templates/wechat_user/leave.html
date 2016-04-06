@@ -230,6 +230,12 @@
                 return
             }
 
+            if(leave_days<=0){
+                Materialize.toast('您申请的请假天数不正确', 4000)
+                $(this).attr('disabled', false)
+                return
+            }
+
 
             var option = {
                 data: {'leave_days_count': $('#leave_days').text(), 'group': group},
