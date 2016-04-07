@@ -189,7 +189,12 @@ def my_leaves(request):
         if not WXUser.objects.filter(wx_openid=user_id).exists():
             return HttpResponseRedirect('/binding')
         else:
-                leaves = Leave.objects.filter(applicant_openid=user_id).order_by('-create_time')
+            leaves = Leave.objects.filter(applicant_openid=user_id).order_by('-create_time')
+
+            now = datetime.datetime.now()
+            expired_out_leaves = Leave.objects.filter(applicant_openid=user_id, status=3,
+                                                      leave_end_datetime__lte=now, group=2)
+            expired_out_leaves.update(status=4)  # 超过当前日期的外出(已通过)变为完成
         return render_to_response('my_leaves.html', {'leaves': leaves},
                                   context_instance=RequestContext(request))
     return HttpResponseRedirect(get_code_url('http://wachat.sttri.com.cn/my_leaves'))
