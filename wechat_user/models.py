@@ -36,12 +36,18 @@ LEAVE_MESSAGE_STATUS = (
     (4, u'已完成'),
 )
 
+
 IS_LEADER_STATUS = ((0, '否'), (1, '是'))
+
 IS_TIMEKEEPER_STATUS = IS_LEADER_STATUS
 
 
+class Department(models.Model):
+    name = models.CharField(max_length=30, blank=True, verbose_name='部门名字')
+
+
 class WXUser(models.Model):
-    department = models.CharField(max_length=30, verbose_name='部门')
+    department = models.ForeignKey(Department, default=None, verbose_name='部门')
     work_num = models.CharField(max_length=30, verbose_name='工号')
     name = models.CharField(max_length=20, verbose_name='姓名')
     cell_phone = models.CharField(max_length=20, verbose_name='手机')
@@ -69,6 +75,7 @@ class WXUser(models.Model):
 
 
 class Leave(models.Model):
+    department = models.ForeignKey(Department, default=None, verbose_name='部门')
     group = models.IntegerField(choices=LEAVE_GROUP_LIST, verbose_name='请假/外出')
     type = models.IntegerField(choices=LEAVE_TYPE_LIST, verbose_name='具体类别')
     leave_start_datetime = models.DateTimeField(verbose_name='开始时间')
