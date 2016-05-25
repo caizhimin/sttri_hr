@@ -1,7 +1,13 @@
 # coding: utf8
+
 from __future__ import unicode_literals
-import io
 import os
+import io
+import StringIO
+import zipfile
+from django.core.wsgi import get_wsgi_application
+os.environ['DJANGO_SETTINGS_MODULE'] = 'sttri_hr.settings'
+application = get_wsgi_application()
 import xlwt
 import xlrd
 import json
@@ -14,6 +20,8 @@ from util.qiniu_upload import my_qiniu
 from util.date import get_work_days
 from wechat_user.models import Leave
 from django.views.decorators.csrf import csrf_exempt
+
+
 # Create your views here.
 
 alignment = xlwt.Alignment()  # Create Alignment
@@ -21,7 +29,6 @@ alignment.horz = xlwt.Alignment.HORZ_CENTER
 
 style = xlwt.XFStyle()  # Create Style
 style.alignment = alignment  # Add Alignment to Style
-
 
 
 
@@ -50,6 +57,11 @@ def index(request):
 
 @csrf_exempt
 def upload_simple_record(request):
+    """
+    生成原始记录表view
+    :param request:
+    :return:
+    """
     year = request.POST.get('year')
     month = request.POST.get('month')
     simple_record = request.FILES.get('simple_record')
@@ -69,6 +81,25 @@ def upload_simple_record(request):
     reload(sys)
     sys.setdefaultencoding('utf-8')
     url = my_qiniu.excel_upload(excel_bytes, wb_name)
+    return HttpResponse(url)
+
+@csrf_exempt
+def split_original_data_view(request):
+    """
+    拆分原始记录总表view
+    :param request:
+    :return:
+    """
+    year = request.POST.get('year')
+    month = request.POST.get('month')
+    original_data = request.FILES.get('original_data_table')
+    aaa = xlrd.open_workbook(file_contents=original_data.read())
+    split_zip = split_original_data(year, month, aaa)
+    import sys
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+    url = my_qiniu.zip_upload(split_zip, '%s年%s月原始记录表拆分压缩包.zip' % (year, month))
+    # print url
     return HttpResponse(url)
 
 LEAVE_TYPE_LIST = (
@@ -98,7 +129,7 @@ def deal_original_data(year, month, excel_obj):
     day_list = [str(start_datetime+datetime.timedelta(days=i)).replace('-', '')
                 for i in xrange((end_datetime - start_datetime).days+1)]
     day_status = get_work_days(day_list)
-
+    print day_status
     # excel_obj = xlrd.open_workbook('/Users/cai/Documents/考勤系统需求说明书及附件/new_test_data.xls')
 
     wb = excel_copy(excel_obj)
@@ -120,9 +151,10 @@ def deal_original_data(year, month, excel_obj):
             day = table0.cell(i, 3 if j != 1 else 4).value.split('-')  # 2016-1-1  need to change to 20160101
             format_day = '%s%s%s' % (day[0], day[1] if int(day[1]) >= 10 else '0%s' % day[1],
                                      day[2] if int(day[2]) >= 10 else '0%s' % day[2])
-            if day_status[format_day] == 1:
+            if day_status[format_day] == '1':
                 ws.write(i, 5 if j != 1 else 6, '公休假日')
-            elif day_status[format_day] == 2:
+            elif day_status[format_day] == '2':
+                print i
                 ws.write(i, 5 if j != 1 else 6, '法定假日')
             else:  # 工作日
                 start_time = datetime.datetime(int(day[0]), int(day[1]), int(day[2]), 8, 30)  # todo 这里要修改 不是按整天请假的查询不出
@@ -291,17 +323,17 @@ def write_all_duty_record_table():
 
 
 @GetRunTime
-def split_original_data():
+def split_original_data(year, month, excel_obj):
     """
     拆分原始记录表
     :return:
     """
-    year = '2016'
-    month = '01'
-    original_data_excel = xlrd.open_workbook('/Users/cai/Documents/考勤系统需求说明书及附件/test_excel.xls')
+    # original_data_excel = xlrd.open_workbook('/Users/cai/Documents/考勤系统需求说明书及附件/test_excel.xls')
+    original_data_excel = excel_obj
     # 合同制和管理序列处理
     table = original_data_excel.sheet_by_index(0)  # 通过索引顺序获取
-
+    buff = StringIO.StringIO()
+    z = zipfile.ZipFile(buff, 'w', zipfile.ZIP_DEFLATED)
     staff_dept_list = set(table.col_values(2)[1:])  # 获取所有的部门列表
     for i in staff_dept_list:
 
@@ -333,8 +365,11 @@ def split_original_data():
                 sheet1.write(k+1, 4, duty_time)
                 sheet1.write(k+1, 5, duty_status)
 
-            work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分原始记录/%s年%s月合同制%s原始记录.xls' %
-                           (year, month, i))  # 保存文件
+            # work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分原始记录/%s年%s年%%s月合同制%s原始记录.xls' %
+            #                (year, month, i))  # 保存文件
+            b = io.BytesIO()
+            work_book.save(b)  # 存入缓存
+            z.writestr('%s年%s月合同制%s原始记录.xls' % (year, month, i), b.getvalue())
         else:  # 管理序列处理
             leader_name_list = []
             for j in xrange(1, table.nrows):
@@ -368,8 +403,11 @@ def split_original_data():
                     sheet1.write(p+1, 4, duty_time)
                     sheet1.write(p+1, 5, duty_status)
 
-                    work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分原始记录/%s年%s月管理序列%s原始记录.xls' %
-                                   (year, month, name))  # 保存文件
+                # work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分原始记录/%s年%s月管理序列%s原始记录.xls' %
+                #                (year, month, name))  # 保存文件
+                b = io.BytesIO()
+                work_book.save(b)  # 存入缓存
+                z.writestr('%s年%s月管理序列%s原始记录.xls' % (year, month, name), b.getvalue())
 
     # 项目合作处理
     # 按 公司拆分
@@ -407,8 +445,11 @@ def split_original_data():
             sheet1.write(k+1, 5, duty_time)
             sheet1.write(k+1, 6, duty_status)
 
-        work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分原始记录/%s年%s月%s公司原始记录.xls' %
-                       (year, month, i))  # 保存文件
+        # work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分原始记录/%s年%s月%s公司原始记录.xls' %
+        #                (year, month, i))  # 保存文件
+        b = io.BytesIO()
+        work_book.save(b)  # 存入缓存
+        z.writestr('%s年%s月%s公司原始记录.xls' % (year, month, i), b.getvalue())
 
     #  按部门拆分
     staff_dept_list = set(table1.col_values(3)[1:])  # 获取所有的部门列表
@@ -444,8 +485,11 @@ def split_original_data():
             sheet1.write(k+1, 5, duty_time)
             sheet1.write(k+1, 6, duty_status)
 
-        work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分原始记录/%s年%s月项目合作%s部门原始记录.xls' %
-                       (year, month, i))  # 保存文件
+        # work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分原始记录/%s年%s月项目合作%s部门原始记录.xls' %
+        #                (year, month, i))  # 保存文件
+        b = io.BytesIO()
+        work_book.save(b)  # 存入缓存
+        z.writestr('%s年%s月项目合作%s部门原始记录.xls' % (year, month, i), b.getvalue())
 
     #  实习生处理 按部门分
     table2 = original_data_excel.sheet_by_index(2)
@@ -479,8 +523,16 @@ def split_original_data():
             sheet1.write(k+1, 4, duty_time)
             sheet1.write(k+1, 5, duty_status)
 
-        work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分原始记录/%s年%s月实习生%s部门原始记录.xls' %
-                       (year, month, i))  # 保存文件
+        # work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分原始记录/%s年%s月实习生%s部门原始记录.xls' %
+        #                (year, month, i))  # 保存文件
+        b = io.BytesIO()
+        work_book.save(b)  # 存入缓存
+        z.writestr('%s年%s月实习生%s部门原始记录.xls' % (year, month, i), b.getvalue())
+    z.close()
+    # buff.flush()
+    ret_zip = buff.getvalue()
+    buff.close()
+    return ret_zip
 
 @GetRunTime
 def split_duty_record_data():

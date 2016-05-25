@@ -33,5 +33,13 @@ class Upload(object):
         qiniu.put_data(token, excel_name, excel_file, mime_type=mime_type, check_crc=True)
         return '%s/%s' % (qiniu_resource_url, excel_name)
 
+    def zip_upload(self, zip_file, zip_name=None):
+        if not zip_name:
+            zip_name = str(uuid.uuid1())
+        mime_type = 'application/zip'
+        token = q.upload_token(qiniu_bucket_name, zip_name)
+        qiniu.put_data(token, zip_name, zip_file, mime_type=mime_type, check_crc=True)
+        return '%s/%s' % (qiniu_resource_url, zip_name)
+
 my_qiniu = Upload()
 
