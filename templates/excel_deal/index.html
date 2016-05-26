@@ -164,6 +164,7 @@
                 },
                 error: function(){
                     $('#modal1').closeModal();
+                    $('#download_simple_record').fadeOut()
                     Materialize.toast('发生错误, 请检查上传文件是否正确或者联系开发人员', 4000)
                 }
 
@@ -202,6 +203,7 @@
                 },
                 error: function(){
                     $('#modal1').closeModal();
+                    $('#download_split_original_data_zip').fadeOut()
                     Materialize.toast('发生错误, 请检查上传文件是否正确或者联系开发人员', 4000)
                 }
 
