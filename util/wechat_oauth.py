@@ -83,7 +83,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "msgtype": "text",
                    "agentid": %s,
                    "text": {
-                       "content": "1%s, 您好。您的%s申请 %s 至 %s 共 %s 天已通过，请点击申请记录进行查看"
+                       "content": "%s, 您好。您的%s申请 %s 至 %s 共 %s 天已通过，请点击申请记录进行查看"
                    },
                    "safe":"0"
                 }
@@ -95,7 +95,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "msgtype": "text",
                    "agentid": %s,
                    "text": {
-                       "content": "2您的部门同事%s申请%s至%s %s 共 %s 天, 请您点击审批按钮进行批准。"
+                       "content": "您的部门同事%s申请%s至%s %s 共 %s 天, 请您点击审批按钮进行批准。"
                    },
                    "safe":"0"
                 }
@@ -107,7 +107,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "msgtype": "text",
                    "agentid": %s,
                    "text": {
-                       "content": "3%s申请%s至%s %s 共 %s 天。"
+                       "content": "%s申请%s至%s %s 共 %s 天。"
                    },
                    "safe":"0"
                 }
@@ -119,7 +119,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "msgtype": "text",
                    "agentid": %s,
                    "text": {
-                       "content": "4%s申请%s至%s %s 共 %s 天, 请注意！"
+                       "content": "%s申请%s至%s %s 共 %s 天, 请注意！"
                    },
                    "safe":"0"
                 }
@@ -131,7 +131,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "msgtype": "text",
                    "agentid": %s,
                    "text": {
-                       "content": "5您的部门同事%s申请%s至%s %s 共 %s 天, 请等待该同事上传%s材料后进行审核。"
+                       "content": "您的部门同事%s申请%s至%s %s 共 %s 天, 请等待该同事上传%s材料后进行审核。"
                    },
                    "safe":"0"
                 }
@@ -143,7 +143,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "msgtype": "text",
                    "agentid": %s,
                    "text": {
-                       "content": "6您的部门同事%s申请%s至%s %s 共 %s 天, 已上传%s材料，请您点击审批按钮进行材料审核。"
+                       "content": "您的部门同事%s申请%s至%s %s 共 %s 天, 已上传%s材料，请您点击审批按钮进行材料审核。"
                    },
                    "safe":"0"
                 }
@@ -156,7 +156,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "msgtype": "text",
                    "agentid": %s,
                    "text": {
-                       "content": "7%s申请%s至%s %s 共 %s 天, 已取消申请。"
+                       "content": "%s申请%s至%s %s 共 %s 天, 已取消申请。"
                    },
                    "safe":"0"
                 }
@@ -170,7 +170,7 @@ def send_msg(receive_open_id, applicant_name, start_datetime, end_datetime, _typ
                    "msgtype": "text",
                    "agentid": %s,
                    "text": {
-                       "content": "8%s, 您好。您的%s申请 %s 至 %s 共 %s 天未通过, 请点击申请记录进行查看。"
+                       "content": "%s, 您好。您的%s申请 %s 至 %s 共 %s 天未通过, 请点击申请记录进行查看。"
                    },
                    "safe":"0"
                 }

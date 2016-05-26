@@ -21,7 +21,12 @@
                     {% else %}
                         <option value="8" disabled="disabled">企业年假(剩余{{ current_user.company_vacation_days }}天)</option>
                     {% endif %}
-                    {% if current_user.legal_vacation_days <= 0 and current_user.company_vacation_days <= 0 %}
+                    {% if current_user.flexible_vacation_days > 0 and current_user.legal_vacation_days <= 0 and current_user.company_vacation_days <= 0 %}
+                        <option value="9">积点兑换年假(剩余{{ current_user.flexible_vacation_days }}天)</option>
+                    {% else %}
+                        <option value="9" disabled="disabled">积点兑换年假(剩余{{ current_user.flexible_vacation_days }}天)</option>
+                    {% endif %}
+                    {% if current_user.legal_vacation_days <= 0 and current_user.company_vacation_days <= 0 and current_user.flexible_vacation_days <= 0 %}
                         <option value="1">事假</option>
                     {% else %}
                         <option value="1" disabled="disabled">事假</option>
@@ -32,8 +37,9 @@
                 </select>
 
             </div>
-            <span style="display: none" id="legal_vacation_days">{{ current_user.legal_vacation_days }}</span><span
-                style="display: none" id="company_vacation_days">{{ current_user.company_vacation_days }}</span>
+            <span style="display: none" id="legal_vacation_days">{{ current_user.legal_vacation_days }}</span>
+            <span style="display: none" id="company_vacation_days">{{ current_user.company_vacation_days }}</span>
+            <span style="display: none" id="flexible_vacation_days">{{ current_user.flexible_vacation_days }}</span>
 
             <div class="row" style="margin: 0 0 0 10%">
 
@@ -162,17 +168,25 @@
             var leave_days = parseFloat($('#leave_days').text())  //实际请假天数
             var legal_vacation_days = parseFloat($('#legal_vacation_days').text()) //法定年假剩余天数
             var company_vacation_days = parseFloat($('#company_vacation_days').text())  //企业年假剩余天数
+            var legal_vacation_days = parseFloat($('#legal_vacation_days').text()) //法定年假剩余天数
+            var flexible_vacation_days = parseFloat($('#flexible_vacation_days').text())  //企业年假剩余天数
 
             console.log(leave_days, legal_vacation_days, company_vacation_days)
 
             if (level_type == '0' && leave_days > legal_vacation_days) {
-                Materialize.toast('法定年休假申请天数不得超过' + legal_vacation_days + '天', 4000)
+                Materialize.toast('法定年假申请天数不得超过' + legal_vacation_days + '天', 4000)
                 $(this).attr('disabled', false)
                 return
             }
 
             if (level_type == '8' && leave_days > company_vacation_days) {
-                Materialize.toast('企业年休假申请天数不得超过' + company_vacation_days + '天', 4000)
+                Materialize.toast('企业年假申请天数不得超过' + company_vacation_days + '天', 4000)
+                $(this).attr('disabled', false)
+                return
+            }
+
+            if (level_type == '9' && leave_days > flexible_vacation_days) {
+                Materialize.toast('积点兑换年假申请天数不得超过' + flexible_vacation_days + '天', 4000)
                 $(this).attr('disabled', false)
                 return
             }
