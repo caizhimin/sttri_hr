@@ -19,6 +19,7 @@ LEAVE_GROUP_LIST = (
 LEAVE_TYPE_LIST = (
     (0, u'法定年假'),
     (8, u'企业年假'),
+    (9, u'积点兑换年假'),
     (1, u'事假'),
     (2, u'病假'),
     (3, u'产假'),
@@ -47,7 +48,7 @@ class Department(models.Model):
 
 
 class WXUser(models.Model):
-    department = models.ForeignKey(Department, default=None, verbose_name='部门')
+    department = models.CharField(max_length=30, blank=True, verbose_name='部门')
     work_num = models.CharField(max_length=30, verbose_name='工号')
     name = models.CharField(max_length=20, verbose_name='姓名')
     cell_phone = models.CharField(max_length=20, verbose_name='手机')
@@ -63,6 +64,7 @@ class WXUser(models.Model):
     company_working_years = models.IntegerField(verbose_name='企业工作年限')
     legal_vacation_days = models.FloatField(default=5, verbose_name='剩余法定年假数')
     company_vacation_days = models.FloatField(default=0, verbose_name='剩余企业年假数')
+    flexible_vacation_days = models.FloatField(default=0, verbose_name='弹性福利年假数')
     is_leader = models.IntegerField(choices=IS_LEADER_STATUS, verbose_name='是否为管理序列')
     is_timekeeper = models.IntegerField(choices=IS_TIMEKEEPER_STATUS, default=0, verbose_name='是否为部门考勤员')
 
@@ -75,7 +77,7 @@ class WXUser(models.Model):
 
 
 class Leave(models.Model):
-    department = models.ForeignKey(Department, default=None, verbose_name='部门')
+    department = models.CharField(max_length=30, blank=True, verbose_name='部门')
     group = models.IntegerField(choices=LEAVE_GROUP_LIST, verbose_name='请假/外出')
     type = models.IntegerField(choices=LEAVE_TYPE_LIST, verbose_name='具体类别')
     leave_start_datetime = models.DateTimeField(verbose_name='开始时间')
@@ -88,7 +90,7 @@ class Leave(models.Model):
     applicant_openid = models.CharField(max_length=50, blank=True, verbose_name='申请者微信open_id')
     status = models.IntegerField(choices=LEAVE_MESSAGE_STATUS, verbose_name='状态')
     next_dealer = models.ForeignKey(WXUser, null=True, blank=True, on_delete=models.SET_NULL, verbose_name='下个审核人')
-    all_dealers = models.CharField(max_length=10, blank=True, default='', verbose_name='审批过的人')
+    all_dealers = models.CharField(max_length=100, blank=True, default='', verbose_name='审批过的人')
     deal_end_time = models.DateTimeField(null=True, verbose_name='审批结束时间')
     refuse_reason = models.TextField(blank=True, verbose_name='拒绝原因')
     attach_photo = models.TextField(blank=True, verbose_name='上传附件图片')  # 为字典形式的字符串
