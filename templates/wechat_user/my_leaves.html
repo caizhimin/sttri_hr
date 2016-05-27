@@ -166,7 +166,7 @@
                                     取&nbsp;&nbsp;消
                                 </button>
                             {% elif i.status == 3 %}  <!--已通过  生效时间前可取消， 可销假 -->
-                                {% if not i.is_past_due %}
+                                {% if not i.lt_start_time %}
                                     <button id="done_btn_{{ i.pk }}" class="done_btn btn waves-effect waves-light deep-orange lighten-1"
                                             href="#done_modal">
                                         销&nbsp;&nbsp;假
