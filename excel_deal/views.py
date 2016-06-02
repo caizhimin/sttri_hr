@@ -111,7 +111,8 @@ LEAVE_TYPE_LIST = (
     (5, '培训'),
     (6, '出差'),
     (7, '其他'),
-    (8, '企业年假')
+    (8, '企业年假'),
+    (9, '积点兑换年假')
 )
 
 LEAVE_TYPE_DICT = dict(LEAVE_TYPE_LIST)
@@ -129,7 +130,7 @@ def deal_original_data(year, month, excel_obj):
     day_list = [str(start_datetime+datetime.timedelta(days=i)).replace('-', '')
                 for i in xrange((end_datetime - start_datetime).days+1)]
     day_status = get_work_days(day_list)
-    print day_status
+    # print day_status
     # excel_obj = xlrd.open_workbook('/Users/cai/Documents/考勤系统需求说明书及附件/new_test_data.xls')
 
     wb = excel_copy(excel_obj)
@@ -146,7 +147,7 @@ def deal_original_data(year, month, excel_obj):
                 tmp = 0  # 不同员工的 晚签到计数器重置为0
 
             duty_time = table0.cell(i, 4 if j != 1 else 5).value
-            name = table0.cell(i, 1).value
+            name = table0.cell(i, 1).value.replace(' ', '')
             # print(duty_time)
             day = table0.cell(i, 3 if j != 1 else 4).value.split('-')  # 2016-1-1  need to change to 20160101
             format_day = '%s%s%s' % (day[0], day[1] if int(day[1]) >= 10 else '0%s' % day[1],
@@ -154,20 +155,15 @@ def deal_original_data(year, month, excel_obj):
             if day_status[format_day] == '1':
                 ws.write(i, 5 if j != 1 else 6, '公休假日')
             elif day_status[format_day] == '2':
-                print i
+                # print i
                 ws.write(i, 5 if j != 1 else 6, '法定假日')
             else:  # 工作日
                 start_time = datetime.datetime(int(day[0]), int(day[1]), int(day[2]), 8, 30)  # todo 这里要修改 不是按整天请假的查询不出
                 end_time = datetime.datetime(int(day[0]), int(day[1]), int(day[2]), 17, 00)
                 if duty_time == '':  # 没考勤记录
-                    # print(day)
                     leaves = Leave.objects.filter(leave_start_datetime__lte=start_time,
                                                   leave_end_datetime__gte=end_time,
                                                   applicant_name=name).exclude(status=0)
-                    # leaves = Leave.objects.filter(leave_start_datetime__year=int(day[0]),
-                    #                               leave_start_datetime__month=int(day[1]),
-                    #                               leave_start_datetime__day=int(day[2]),
-                    #                               applicant_name=name).exclude(status=0)
                     if leaves:  # 当天存在请假/外出记录
                         leave_days = leaves.first().leave_days
                         if leaves.first().group == 1:  # 请假
@@ -178,19 +174,33 @@ def deal_original_data(year, month, excel_obj):
                         ws.write(i, 5 if j != 1 else 6, '缺勤一天')
 
                 elif len(duty_time.split(' ')) == 1:  # 只有一次考勤记录
-                    leaves = Leave.objects.filter(leave_start_datetime__lte=start_time, leave_end_datetime__gte=end_time,
-                                                  applicant_name=name).exclude(status=0)
+                    # 查询当天的记录
+                    leaves = Leave.objects.filter(leave_start_datetime__gte=start_time, leave_end_datetime__lte=end_time,
+                                                  applicant_name=name)
+                    # 查询多天的记录
+                    if not leaves:
+                        leaves = Leave.objects.filter(leave_start_datetime__lte=start_time, leave_end_datetime__gte=end_time,
+                                                      applicant_name=name)
                     if leaves:
                         leave_days = leaves.first().leave_days
                         if leaves.first().group == 1:  # 请假
+                            if leaves.first().leave_start_datetime.hour == 11:  # 代表请了下午
+                                ws.write(i, 5 if j != 1 else 6, '请假(%s)%s天(下午)' % (LEAVE_TYPE_DICT[leaves.first().type], leave_days))
+                            elif leaves.first().leave_end_datetime.hour == 13:  # 代表请了上午
+                                ws.write(i, 5 if j != 1 else 6, '请假(%s)%s天(上午)' % (LEAVE_TYPE_DICT[leaves.first().type], leave_days))
+                            else:
                                 ws.write(i, 5 if j != 1 else 6, '请假(%s)%s天' % (LEAVE_TYPE_DICT[leaves.first().type], leave_days))
                         else:  # 外出
-                            ws.write(i, 5 if j != 1 else 6, '外出(%s)%s天' % (LEAVE_TYPE_DICT[leaves.first().type], leave_days))
+                            if leaves.first().leave_start_datetime.hour == 11:  # 代表请了下午
+                                ws.write(i, 5 if j != 1 else 6, '外出(%s)%s天(下午)' % (LEAVE_TYPE_DICT[leaves.first().type], leave_days))
+                            elif leaves.first().leave_end_datetime.hour == 13:  # 代表请了上午
+                                ws.write(i, 5 if j != 1 else 6, '外出(%s)%s天(上午)' % (LEAVE_TYPE_DICT[leaves.first().type], leave_days))
+                            else:
+                                ws.write(i, 5 if j != 1 else 6, '外出(%s)%s天' % (LEAVE_TYPE_DICT[leaves.first().type], leave_days))
                     else:  # 当天没有请假/外出记录
                         ws.write(i, 5 if j != 1 else 6, '缺勤一天')
 
                 else:  # 有两次以上的考勤记录
-                    # todo  有两次也要查请假记录
                     on_duty_time = duty_time.split(' ')[0].split(':')  # ['08', '23']
                     off_duty_time = duty_time.split(' ')[-1].split(':')  # ['08', '23']
                     content = ''
@@ -221,9 +231,28 @@ def deal_original_data(year, month, excel_obj):
                         content = '缺勤一天'
                     if '缺勤一天' in content:
                         content = '缺勤一天'
-
-                    ws.write(i, 5 if j != 1 else 6, content)
-
+                    # 增加异常考勤状态时, 再次查询有无考勤记录, 特别是请假或者外出半天的情况
+                    if content in ('迟到', '晚签到', '缺勤上午', '缺勤下午', '缺勤一天', '早退'):
+                        leaves = Leave.objects.filter(leave_start_datetime__gte=start_time, leave_end_datetime__lte=end_time,
+                                                      applicant_name=name).exclude(status=0)
+                        if leaves:
+                            leave_days = leaves.first().leave_days
+                            if leaves.first().group == 1:  # 请假
+                                if leaves.first().leave_start_datetime.hour == 11:  # 代表请了下午
+                                    ws.write(i, 5 if j != 1 else 6, '请假(%s)%s天(下午)' % (LEAVE_TYPE_DICT[leaves.first().type], leave_days))
+                                elif leaves.first().leave_end_datetime.hour == 13:  # 代表请了上午
+                                    ws.write(i, 5 if j != 1 else 6, '请假(%s)%s天(上午)' % (LEAVE_TYPE_DICT[leaves.first().type], leave_days))
+                                else:
+                                    ws.write(i, 5 if j != 1 else 6, '请假(%s)%s天' % (LEAVE_TYPE_DICT[leaves.first().type], leave_days))
+                            else:  # 外出
+                                if leaves.first().leave_start_datetime.hour == 11:  # 代表请了下午
+                                    ws.write(i, 5 if j != 1 else 6, '外出(%s)%s天(下午)' % (LEAVE_TYPE_DICT[leaves.first().type], leave_days))
+                                elif leaves.first().leave_end_datetime.hour == 13:  # 代表请了上午
+                                    ws.write(i, 5 if j != 1 else 6, '外出(%s)%s天(上午)' % (LEAVE_TYPE_DICT[leaves.first().type], leave_days))
+                                else:
+                                    ws.write(i, 5 if j != 1 else 6, '外出(%s)%s天' % (LEAVE_TYPE_DICT[leaves.first().type], leave_days))
+                        else:  # 当天没有请假/外出记录
+                            ws.write(i, 5 if j != 1 else 6, content)
                     pass
         ws.col(4).width = 5000  # 第五列的宽度
         ws.col(5).width = 5000
@@ -235,6 +264,10 @@ def deal_original_data(year, month, excel_obj):
 
 @GetRunTime
 def write_all_duty_record_table():
+    """
+    当月全体员工考勤记录表
+    :return:
+    """
     year = '2016'
     month = '01'
     work_book = xlwt.Workbook()  # 创建工作簿
@@ -302,8 +335,10 @@ def write_all_duty_record_table():
             elif '请假' in duty_status or '外出' in duty_status:
                 if ('企业' in duty_status) or ('法定' in duty_status):
                     am_duty_content = pm_duty_content = duty_status[0: 8]  # 请假(法定年假)1.0天
+                elif '积点兑换' in duty_status:
+                    am_duty_content = pm_duty_content = duty_status[0:10]   # 请假(积点兑换年假)1.0天
                 else:
-                    am_duty_content = pm_duty_content = duty_status[0: 6]  # 请假(年假)1.0天 取括号中的
+                    am_duty_content = pm_duty_content = duty_status[0: 6]  # 外出(培训)1.0天 取括号中的
             elif '晚签到' in duty_status:
                 am_duty_content = '晚签到'
             elif '迟到' in duty_status:
