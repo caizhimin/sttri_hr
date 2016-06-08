@@ -89,7 +89,28 @@
                 </div>
 
             </div>
-            <a class="waves-effect waves-light btn" style="font-size: 1rem;color: white;margin: 14px 0 0 20px;line-height: 47px;height: 47px;float: right;display: none" id="download_all_duty_record_table">下载员工考勤记录总表</a>
+            <a class="waves-effect waves-light btn" style="font-size: 1rem;color: white;margin: 14px 0 0 20px;line-height: 47px;height: 47px;float: right;display: none" id="download_all_duty_record_table">下载考勤记录总表</a>
+
+        </div>
+    </form>
+
+    <form class="split_duty_record_data_view_form" id="" method="post" action="{% url 'split_duty_record_data_view' %}"
+          enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="input-field col s12" style="width: 73%;margin: 5% 0 5% 10%;font-size: 1rem;clear: both">
+            <div class="file-field input-field" style="width: 725px;float: left">
+                <div class="btn" style="width: 185px">
+                    <span>考勤记录总表</span>
+                    <input name="duty_record_data" type="file" accept="application/vnd.ms-excel"
+                           onchange="split_duty_record_data_view(this)">
+
+                </div>
+                <div class="file-path-wrapper">
+                    <input class="file-path" type="text" placeholder="此控件用于拆分考勤记录总表">
+                </div>
+
+            </div>
+            <a class="waves-effect waves-light btn" style="font-size: 1rem;color: white;margin: 14px 0 0 20px;line-height: 47px;height: 47px;float: right;display: none" id="download_split_duty_record_data_view_zip">下载考勤记录总表拆分压缩包</a>
 
         </div>
     </form>
@@ -264,6 +285,44 @@
                 error: function(){
                     $('#modal1').closeModal();
                     $('#download_all_duty_record_table').fadeOut()
+                    Materialize.toast('发生错误, 请检查上传文件是否正确或者联系开发人员', 4000)
+                }
+
+            }
+            form.ajaxSubmit(option)
+
+    }
+
+    function split_duty_record_data_view(obj){
+        var year = $('#year').val()
+        var month = $('#month').val()
+        if (year==null){
+                Materialize.toast('请选择正确的年份', 4000)
+                $("input[name='duty_record_data']").val('')
+                return
+            }
+            if(month==null){
+                Materialize.toast('请选择正确的月份', 4000)
+                $("input[name='duty_record_data']").val('')
+                return
+            }
+            $('#modal1').openModal();
+            var form = $(obj).closest('.split_duty_record_data_view_form')
+            var option = {
+                data: {'year': year, 'month': month},
+                success: function (url) {
+                    console.log(url)
+                    $('#modal1').closeModal();
+                    $('#download_split_duty_record_data_view_zip').attr('href', url+'?='+Math.random())
+                    $('#download_split_duty_record_data_view_zip').fadeIn()
+{#                    for (var i = 0; i < ur l.length; i++) {#}
+{#                        window.open(url[i])#}
+{#                    }#}
+
+                },
+                error: function(){
+                    $('#modal1').closeModal();
+                    $('#download_split_duty_record_data_view_zip').fadeOut()
                     Materialize.toast('发生错误, 请检查上传文件是否正确或者联系开发人员', 4000)
                 }
 

@@ -513,23 +513,24 @@ def write_all_duty_record_table(year, month, excel_obj):
                          am_duty_content)
             sheet1.write(2*((i-1)/month_days)+3, (2 if j != 1 else 3) + (month_days if i % month_days == 0 else i % month_days),
                          pm_duty_content)
-    return work_book,  '%s年%s月员工考勤记录总表.xls' % (year, month)
+    return work_book,  '%s年%s月考勤记录总表.xls' % (year, month)
     # work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/test_excel2222.xls')  # 保存文件
 
 
 
 @GetRunTime
-def split_duty_record_data():
+def split_duty_record_data(year, month, excel_obj):
     """
     拆分总考勤记录表
     :return:
     """
-    year = '2016'
-    month = '01'
     month_days = calendar.monthrange(int(year), int(month))[1]
-    original_data_excel = xlrd.open_workbook('/Users/cai/Documents/考勤系统需求说明书及附件/test_excel2222.xls')
+    # original_data_excel = xlrd.open_workbook('/Users/cai/Documents/考勤系统需求说明书及附件/test_excel2222.xls')
+    original_data_excel = excel_obj
     table0 = original_data_excel.sheet_by_index(0)  # 通过索引顺序获取
-    staff_dept_list = set(table0.col_values(0)[1:])  # 获取所有的部门列表
+    staff_dept_list = set(table0.col_values(0)[2:])  # 获取所有的部门列表
+    buff = StringIO.StringIO()
+    z = zipfile.ZipFile(buff, 'w', zipfile.ZIP_DEFLATED)
     for i in staff_dept_list:
         work_book = xlwt.Workbook()  # 创建工作簿
         sheet1 = work_book.add_sheet(u'合同制', cell_overwrite_ok=True)  # 创建sheet
@@ -555,8 +556,11 @@ def split_duty_record_data():
                     status = table0.cell(index_list[k], l+3).value  # 考勤状态
                     sheet1.write(k+2, l+3, status)
 
-            work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分考勤记录表/%s年%s月合同制%s考勤记录表.xls' %
-                           (year, month, i))  # 保存文件
+            # work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分考勤记录表/%s年%s月合同制%s考勤记录表.xls' %
+            #                (year, month, i))  # 保存文件
+            b = io.BytesIO()
+            work_book.save(b)  # 存入缓存
+            z.writestr('%s年%s月合同制%s考勤记录表.xls' % (year, month, i), b.getvalue())
         else:  # 管理序列处理
             leader_name_list = []
             for j in xrange(1, table0.nrows):
@@ -586,8 +590,11 @@ def split_duty_record_data():
                         sheet1.write(1, l+3, l+1, style)
                         status = table0.cell(leader_index[p], l+3).value  # 考勤状态
                         sheet1.write(p+2, l+3, status)
-                    work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分考勤记录表/%s年%s月管理序列%s考勤记录表.xls' %
-                                   (year, month, name))  # 保存文件
+                    # work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分考勤记录表/%s年%s月管理序列%s考勤记录表.xls' %
+                    #                (year, month, name))  # 保存文件
+                    b = io.BytesIO()
+                    work_book.save(b)  # 存入缓存
+                    z.writestr('%s年%s月管理序列%s考勤记录表' % (year, month, i), b.getvalue())
     # 项目合作处理
     # 按 公司拆分
     table1 = original_data_excel.sheet_by_index(1)  # 通过索引顺序获取
@@ -616,11 +623,14 @@ def split_duty_record_data():
             sheet1.write(k+2, 3, staff_name)
             for l in xrange(0, month_days):
                 sheet1.write(1, l+4, l+1, style)
-                status = table0.cell(index_list[k], l+3).value  # 考勤状态
+                status = table1.cell(index_list[k], l+4).value  # 考勤状态
                 sheet1.write(k+2, l+4, status)
 
-        work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分考勤记录表/%s年%s月%s公司考勤记录表.xls' %
-                       (year, month, i))  # 保存文件
+        # work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分考勤记录表/%s年%s月%s公司考勤记录表.xls' %
+        #                (year, month, i))  # 保存文件
+        b = io.BytesIO()
+        work_book.save(b)  # 存入缓存
+        z.writestr('%s年%s月%s公司考勤记录表.xls' % (year, month, i), b.getvalue())
     # 按 部门拆分
     staff_dept_list = set(table1.col_values(1)[2:])  # 获取所有的部门列表
     for i in staff_dept_list:
@@ -647,15 +657,18 @@ def split_duty_record_data():
             sheet1.write(k+2, 3, staff_name)
             for l in xrange(0, month_days):
                 sheet1.write(1, l+4, l+1, style)
-                status = table0.cell(index_list[k], l+3).value  # 考勤状态
+                status = table1.cell(index_list[k], l+4).value  # 考勤状态
                 sheet1.write(k+2, l+4, status)
 
-        work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分考勤记录表/%s年%s月项目协作%s员工考勤记录表.xls' %
-                       (year, month, i))  # 保存文件
+        # work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分考勤记录表/%s年%s月项目协作%s员工考勤记录表.xls' %
+        #                (year, month, i))  # 保存文件
+        b = io.BytesIO()
+        work_book.save(b)  # 存入缓存
+        z.writestr('%s年%s月项目协作%s员工考勤记录表.xls' % (year, month, i), b.getvalue())
 
     #  实习生 按部门分
     table2 = original_data_excel.sheet_by_index(2)
-    staff_dept_list = set(table2.col_values(0)[1:])  # 获取所有的部门列表
+    staff_dept_list = set(table2.col_values(0)[2:])  # 获取所有的部门列表
     for i in staff_dept_list:
         work_book = xlwt.Workbook()  # 创建工作簿
         sheet1 = work_book.add_sheet(u'实习生', cell_overwrite_ok=True)  # 创建sheet
@@ -680,8 +693,16 @@ def split_duty_record_data():
                 status = table0.cell(index_list[k], l+3).value  # 考勤状态
                 sheet1.write(k+2, l+3, status)
 
-        work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分考勤记录表/%s年%s月实习生%s部门考勤记录表.xls' %
-                       (year, month, i))  # 保存文件
+        # work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分考勤记录表/%s年%s月实习生%s部门考勤记录表.xls' %
+        #                (year, month, i))  # 保存文件
+        b = io.BytesIO()
+        work_book.save(b)  # 存入缓存
+        z.writestr('%s年%s月实习生%s部门考勤记录表.xls' % (year, month, i), b.getvalue())
+    z.close()
+    # buff.flush()
+    ret_zip = buff.getvalue()
+    buff.close()
+    return ret_zip
 
 
 @GetRunTime

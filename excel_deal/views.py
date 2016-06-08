@@ -110,6 +110,26 @@ def write_all_duty_record_table_view(request):
     return HttpResponse(url)
 
 
+@csrf_exempt
+def split_duty_record_data_view(request):
+    """
+    拆分员工考勤记录总表view
+    :param request:
+    :return:
+    """
+    year = request.POST.get('year')
+    month = request.POST.get('month')
+    original_data = request.FILES.get('duty_record_data')
+    aaa = xlrd.open_workbook(file_contents=original_data.read())
+    split_zip = split_duty_record_data(year, month, aaa)
+    import sys
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+    url = my_qiniu.zip_upload(split_zip, '%s年%s月考勤记录表拆分压缩包.zip' % (year, month))
+    # print url
+    return HttpResponse(url)
+
+
 
 
 
