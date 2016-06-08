@@ -71,6 +71,29 @@
 
         </div>
     </form>
+
+
+    <form class="write_all_duty_record_table_view_form" id="" method="post" action="{% url 'write_all_duty_record_table_view' %}"
+          enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="input-field col s12" style="width: 73%;margin: 9% 0 5% 10%;font-size: 1rem;clear: both">
+            <div class="file-field input-field" style="width: 725px;float: left">
+                <div class="btn" style="width: 185px">
+                    <span>原始记录总表</span>
+                    <input name="original_data_table_a" type="file" accept="application/vnd.ms-excel"
+                           onchange="write_all_duty_record_table_view(this)">
+
+                </div>
+                <div class="file-path-wrapper">
+                    <input class="file-path" type="text" placeholder="此控件用于生成员工考勤记录总表">
+                </div>
+
+            </div>
+            <a class="waves-effect waves-light btn" style="font-size: 1rem;color: white;margin: 14px 0 0 20px;line-height: 47px;height: 47px;float: right;display: none" id="download_all_duty_record_table">下载员工考勤记录总表</a>
+
+        </div>
+    </form>
+
 {#  <a class="waves-effect waves-light btn modal-trigger" href="#modal1">Modal</a>#}
 
         <!--loading-->
@@ -174,7 +197,6 @@
         }
 
     function split_original_data_view(obj){
-        console.log(1)
         var year = $('#year').val()
         var month = $('#month').val()
         if (year==null){
@@ -204,6 +226,44 @@
                 error: function(){
                     $('#modal1').closeModal();
                     $('#download_split_original_data_zip').fadeOut()
+                    Materialize.toast('发生错误, 请检查上传文件是否正确或者联系开发人员', 4000)
+                }
+
+            }
+            form.ajaxSubmit(option)
+
+    }
+
+    function write_all_duty_record_table_view(obj){
+        var year = $('#year').val()
+        var month = $('#month').val()
+        if (year==null){
+                Materialize.toast('请选择正确的年份', 4000)
+                $("input[name='original_data_table_a']").val('')
+                return
+            }
+            if(month==null){
+                Materialize.toast('请选择正确的月份', 4000)
+                $("input[name='original_data_table_a']").val('')
+                return
+            }
+            $('#modal1').openModal();
+            var form = $(obj).closest('.write_all_duty_record_table_view_form')
+            var option = {
+                data: {'year': year, 'month': month},
+                success: function (url) {
+                    console.log(url)
+                    $('#modal1').closeModal();
+                    $('#download_all_duty_record_table').attr('href', url+'?='+Math.random())
+                    $('#download_all_duty_record_table').fadeIn()
+{#                    for (var i = 0; i < ur l.length; i++) {#}
+{#                        window.open(url[i])#}
+{#                    }#}
+
+                },
+                error: function(){
+                    $('#modal1').closeModal();
+                    $('#download_all_duty_record_table').fadeOut()
                     Materialize.toast('发生错误, 请检查上传文件是否正确或者联系开发人员', 4000)
                 }
 
