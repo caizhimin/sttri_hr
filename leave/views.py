@@ -458,6 +458,7 @@ def cancel(request):
             applicant.company_vacation_days += leave_days
         if leave.type == 9:
             applicant.flexible_vacation_days += leave_days
+        applicant.save()
     if next_dealer_id:  # 通知下一个审批者
         next_dealer_user_id = WXUser.objects.get(pk=next_dealer_id).wx_openid
         send_msg(next_dealer_user_id, leave.applicant_name, leave.leave_start_datetime,
