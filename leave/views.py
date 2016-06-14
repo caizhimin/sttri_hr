@@ -167,7 +167,7 @@ def leave_apply(request):
     end_time = request.POST.get('end_time', '')
     leave_days = float(request.POST.get('leave_days_count', 0))
     user_id = request.session.get('user_id')
-    # user_id = 'caizm'  # todo  delete
+    user_id = 'caizm'  # todo  delete
     wxuser = WXUser.objects.get(wx_openid=user_id)
     create_time = datetime.datetime.now()
     leave_start_datetime = start_date + ' ' + start_time
@@ -238,7 +238,7 @@ def leave_apply(request):
         wxuser.save()
         send_msg(receive_open_id=direct_director.wx_openid, applicant_name=wxuser.name,
                  start_datetime=str(leave_start_datetime),
-                 end_datetime=str(leave_end_datetime), _type=LEAVE_TYPE_DICT[leave_type], days=leave_days, msg_type='apply')
+                 end_datetime=str(leave_end_datetime), _type=LEAVE_TYPE_DICT[int(leave_type)], days=leave_days, msg_type='apply')
 
     else:  # 其他假期通知李赫
         Leave.objects.create(department=wxuser.department, group=int(group), type=leave_type,
