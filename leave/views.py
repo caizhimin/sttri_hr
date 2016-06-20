@@ -435,8 +435,10 @@ def approve(request):
         leave.refuse_reason = refuse_reason
         leave.save()
         if leave.type == 0:  # 拒绝年假后需给申请者补上年假数
-            applicant_wx_user.legal_vacation_days += leave.leave_days  # todo 这里没有考虑补企业年假OR法定年假，待修改
-            applicant_wx_user.save()
+            applicant_wx_user.legal_vacation_days += leave.leave_days
+        elif leave.type == 8:
+            applicant_wx_user.flexible_vacation_days += leave.leave_days
+        applicant_wx_user.save()
         return HttpResponse('Reject')
 
 
