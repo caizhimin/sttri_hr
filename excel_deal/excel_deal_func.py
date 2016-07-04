@@ -594,7 +594,7 @@ def split_duty_record_data(year, month, excel_obj):
                     #                (year, month, name))  # 保存文件
                     b = io.BytesIO()
                     work_book.save(b)  # 存入缓存
-                    z.writestr('%s年%s月管理序列%s考勤记录表' % (year, month, i), b.getvalue())
+                    z.writestr('%s年%s月管理序列%s考勤记录表' % (year, month, name), b.getvalue())
     # 项目合作处理
     # 按 公司拆分
     table1 = original_data_excel.sheet_by_index(1)  # 通过索引顺序获取
