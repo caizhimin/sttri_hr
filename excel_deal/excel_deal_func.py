@@ -256,11 +256,32 @@ def split_original_data(year, month, excel_obj):
             z.writestr('%s年%s月合同制%s原始记录.xls' % (year, month, i), b.getvalue())
         else:  # 管理序列处理
             leader_name_list = []
+            leader_index = []
+            work_book2 = xlwt.Workbook()  # 创建工作簿
+            sheet2 = work_book2.add_sheet(u'管理序列', cell_overwrite_ok=True)  # 创建管理序列表
             for j in xrange(1, table.nrows):
                 if table.cell(j, 2).value == '管理序列':
+                    # 写入全部的管理序列
+                    leader_index.append(j)
                     leader_name = table.cell(j, 1).value
                     if leader_name not in leader_name_list:
-                        leader_name_list.append(leader_name)
+                        leader_name_list.append(leader_name)  # 确定管理序列人员在原表中的index
+            for k in xrange(0, len(leader_index)):
+                staff_no = table.cell(leader_index[k], 0).value  # 工号
+                staff_name = table.cell(leader_index[k], 1).value  # 姓名
+                staff_dept = table.cell(leader_index[k], 2).value  # 部门
+                duty_date = table.cell(leader_index[k], 3).value  # 日期
+                duty_time = table.cell(leader_index[k], 4).value  # 时间
+                duty_status = table.cell(leader_index[k], 5).value
+                sheet2.write(k+1, 0, staff_no)
+                sheet2.write(k+1, 1, staff_name)
+                sheet2.write(k+1, 2, staff_dept)
+                sheet2.write(k+1, 3, duty_date)
+                sheet2.write(k+1, 4, duty_time)
+                sheet2.write(k+1, 5, duty_status)
+            b = io.BytesIO()
+            work_book2.save(b)  # 存入缓存
+            z.writestr('%s年%s月全部管理序列原始记录.xls' % (year, month), b.getvalue())
             all_index = []  # 管理序列姓名对应的index 字典 list
             # [{u'index': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], u'name': u'\u9886\u5bfcB'}, {u'index': [32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62], u'name': u'\u9886\u5bfcA'}]
 
@@ -563,11 +584,33 @@ def split_duty_record_data(year, month, excel_obj):
             z.writestr('%s年%s月合同制%s考勤记录表.xls' % (year, month, i), b.getvalue())
         else:  # 管理序列处理
             leader_name_list = []
+            work_book2 = xlwt.Workbook()  # 创建工作簿
+            sheet2 = work_book2.add_sheet(u'管理序列', cell_overwrite_ok=True)  # 创建管理序列表
+            sheet2.write(0, 0, '研究院%s年%s月合同制全部管理序列考勤记录表' % (year, month))
+            sheet2.write(1, 0, '部门')
+            sheet2.write(1, 1, '员工工号')
+            sheet2.write(1, 2, '日期姓名')
+            leader_index_1 = []
             for j in xrange(1, table0.nrows):
                 if table0.cell(j, 0).value == '管理序列':
+                    leader_index_1.append(j)
                     leader_name = table0.cell(j, 2).value
                     if leader_name not in leader_name_list:
                         leader_name_list.append(leader_name)
+            for k in xrange(0, len(leader_index_1)):
+                staff_dept = table0.cell(leader_index_1[k], 0).value  # 部门
+                staff_no = table0.cell(leader_index_1[k], 1).value  # 工号
+                staff_name = table0.cell(leader_index_1[k], 2).value  # 姓名
+                sheet2.write(k+2, 0, staff_dept)
+                sheet2.write(k+2, 1, staff_no)
+                sheet2.write(k+2, 2, staff_name)
+                for l in xrange(0, month_days):
+                    sheet2.write(1, l+3, l+1, style)
+                    status = table0.cell(leader_index_1[k], l+3).value  # 考勤状态
+                    sheet2.write(k+2, l+3, status)
+            b = io.BytesIO()
+            work_book2.save(b)  # 存入缓存
+            z.writestr('%s年%s月全部管理序列考勤记录表.xls' % (year, month), b.getvalue())
             all_index = []  # 管理序列姓名对应的index 字典 list
             # [{u'index': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], u'name': u'\u9886\u5bfcB'}, {u'index': [32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62], u'name': u'\u9886\u5bfcA'}]
             for m in leader_name_list:
