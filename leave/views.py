@@ -308,6 +308,7 @@ def out_apply(request):
     return HttpResponse(json.dumps({'leave_type': 'Success'}))
 
 
+@csrf_exempt
 def approve(request):
     """
     批准
