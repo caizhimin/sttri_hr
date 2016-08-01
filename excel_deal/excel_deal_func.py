@@ -679,7 +679,7 @@ def split_duty_record_data(year, month, excel_obj):
     for i in staff_dept_list:
         work_book = xlwt.Workbook()  # 创建工作簿
         sheet1 = work_book.add_sheet(u'项目合作', cell_overwrite_ok=True)  # 创建sheet
-        sheet1.write(0, 0, '研究院%s年%s月项目协作%s员工考勤记录表' % (year, month, i))
+        sheet1.write(0, 0, '研究院%s年%s月项目%s员合作工考勤记录表' % (year, month, i))
         sheet1.write(1, 0, '公司')
         sheet1.write(1, 1, '部门')
         sheet1.write(1, 2, '员工工号')
@@ -703,11 +703,11 @@ def split_duty_record_data(year, month, excel_obj):
                 status = table1.cell(index_list[k], l+4).value  # 考勤状态
                 sheet1.write(k+2, l+4, status)
 
-        # work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分考勤记录表/%s年%s月项目协作%s员工考勤记录表.xls' %
+        # work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分考勤记录表/%s年%s月项目合作%s员工考勤记录表.xls' %
         #                (year, month, i))  # 保存文件
         b = io.BytesIO()
         work_book.save(b)  # 存入缓存
-        z.writestr('%s年%s月项目协作%s员工考勤记录表.xls' % (year, month, i), b.getvalue())
+        z.writestr('%s年%s月项目合作%s员工考勤记录表.xls' % (year, month, i), b.getvalue())
 
     #  实习生 按部门分
     table2 = original_data_excel.sheet_by_index(2)
