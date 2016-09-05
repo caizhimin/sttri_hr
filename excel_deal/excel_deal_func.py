@@ -733,7 +733,7 @@ def split_duty_record_data(year, month, excel_obj):
             sheet1.write(k+2, 2, staff_name)
             for l in xrange(0, month_days):
                 sheet1.write(1, l+3, l+1, style)
-                status = table0.cell(index_list[k], l+3).value  # 考勤状态
+                status = table2.cell(index_list[k], l+3).value  # 考勤状态
                 sheet1.write(k+2, l+3, status)
 
         # work_book.save('/Users/cai/Documents/考勤系统需求说明书及附件/拆分考勤记录表/%s年%s月实习生%s部门考勤记录表.xls' %
